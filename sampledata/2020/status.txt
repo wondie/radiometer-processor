@@ -1,0 +1,4 @@
+WMS_57 - worst
+WMS_58 - bad
+WMS63 - worst
+WMS69 - bad

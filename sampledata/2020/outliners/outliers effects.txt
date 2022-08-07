@@ -1,0 +1,5 @@
+	
+with all - 0.6799
+without 31 - 0.7282
+Without 51 - 0.7181
+without 31 and 51 - 0.768
