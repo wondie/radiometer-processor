@@ -1,3 +1,4 @@
+
 ###Copyright (C) Wondimagegn Tesfaye Beshah - All Rights Reserved
 # Unauthorized copying of this file and software as a whole,
 # via any medium is strictly prohibited
@@ -7,36 +8,31 @@
 import glob
 import json
 import os
-# import re
+
 from functools import reduce
-from itertools import groupby
-# import threading
+
 from collections import OrderedDict
 import math
-# from datetime import datetime
-from os import remove, path
+
+from os import path
 from os.path import expanduser
-# import random
 
 from natsort import os_sorted
-# from sklearn.metrics import mean_squared_error
+
 import numpy as np
 import pandas as pd
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.figure import Figure
+
 import matplotlib.pyplot as plt
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QMainWindow, QApplication,
-    QFileDialog, QTableWidgetItem,
-    QComboBox, QDialogButtonBox, QHeaderView, QLineEdit, QWidget, QHBoxLayout,
-    QToolButton, QTableWidget, QVBoxLayout, QSizePolicy, QSpacerItem, QPlainTextEdit, QMessageBox, QPushButton,
-    QTreeWidgetItem)
+    QFileDialog, QLineEdit, QMessageBox, QTreeWidgetItem)
 from ui.processor import Ui_RrsProcessor
-data_path = 'D:/MSU/codes/radiometer_processor/sampledata/processed/'
+# data_path = 'D:/MSU/codes/radiometer_processor/sampledata/processed/'
 PREFIX = 'water'
 def prepare_irradiance(path):
     """
@@ -105,23 +101,26 @@ def calculate_reflectance(path):
     :rtype:
     """
     water_files_sorted = glob.glob('{}/*.asc'.format(path))
+
     water_files_sorted = os_sorted(water_files_sorted)
-    # print ('w',water_files_sorted)
-    grouped_files = [(j,list(i)) for j, i in groupby(water_files_sorted,
-                  lambda a: '{}/{}_{}'.format(
-                      os.path.dirname(a),
-                      os.path.basename(a).split('_')[0],
-                      os.path.basename(a).split('_')[1])
-                                                     )]
-    # print ('g',grouped_files)
+
+    grouped_files = OrderedDict()
+
+    for w in water_files_sorted:
+        output_path = '{}/{}'.format(os.path.dirname(w), os.path.basename(w).split('_')[0])
+        if output_path not in grouped_files.keys():
+            grouped_files[output_path] = []
+
+        grouped_files[output_path].append(w)
+
     processed_files_cols = OrderedDict()
     processed_files_df = OrderedDict()
-    # print (path)
 
-    for output_path, water_files in grouped_files:
+    for output_path, water_files in grouped_files.items():
         df = None
+
         for file_path in water_files:
-            # print ('f',file_path)
+
             suff = file_path[file_path.rindex('_') + 1:].replace('.asc', '')
             water_col = 'raw_{}_{}'.format(PREFIX, suff)
 
@@ -130,22 +129,23 @@ def calculate_reflectance(path):
             if suff == '000':
 
                 df = pd.read_fwf(file_path, skiprows=14, skipfooter=1,
-                                   names=headers)
+                                   names=headers, encoding='latin_1')
             elif suff == '003':
                 # water_cols[file_path].append(water_col)
                 data12 = pd.read_fwf(file_path, skiprows=14, skipfooter=1,
-                                     names=headers)
+                                     names=headers, encoding='latin_1')
                 if df is not None:
                     df['sky'] = data12[water_col]
 
             else:# suffix is 001, or 002
                 # water_cols[file_path.replace('_{}'.format(suff), '')].append(water_col)
                 data12 = pd.read_fwf(file_path, skiprows=14, skipfooter=1,
-                                    names=headers)
+                                    names=headers, encoding='latin_1')
                 if df is not None:
                     df[water_col] = data12[water_col]
 
         cols_2 = []
+
         for col in df.columns:
             if col.startswith('raw'):
                 new_col = col.replace('raw_', '')
@@ -321,10 +321,8 @@ def collect_rrs_to_single_sheet(processed_df):
     df_cols = OrderedDict()
     writer = pd.ExcelWriter(output_xlsx, engine='xlsxwriter')
     for i, (f, df)  in enumerate(processed_df.items()):
-        file_name = os.path.basename(f)
-        col_names = file_name.split('_')
 
-        col_name = '{}_{}'.format(col_names[0], col_names[1].replace('.xlsx', ''))
+        col_name =  os.path.basename(f).replace('.xlsx', '')
 
         if i == 0:
             df_cols['wavelength'] = (df['wavelength'])
@@ -367,6 +365,18 @@ def interpolate(xlsx_file_path, min, max):
     y.to_excel(writer, sheet_name='Sheet1', index=False)
     create_chart(y, writer, 1, len(y.columns), 0)
     writer.save()
+    if os.path.isfile(output_xlsx):
+        show_success_msg('Success', 'Successfully processed and interpolated radiometer data!')
+
+
+def show_success_msg(title, msg):
+    msg_box = QMessageBox()
+    msg_box.setIcon(QMessageBox.Information)
+    msg_box.setText(msg)
+    msg_box.setWindowTitle(title)
+    msg_box.setStandardButtons(QMessageBox.Ok)
+    msg_box.exec_()
+
 
 #interpolate(rrs, 277, 1094)
 def merge_two_spreadsheet(xlsx_path1, xlsx_path2, combined_path):
@@ -504,6 +514,9 @@ def convert_hyperspectral_to_multispectral(srf_path, rrs_path, output_rrs):
     final_df.to_excel(writer, sheet_name='Sheet1', index=False)
     create_chart(final_df, writer, 1, len(final_df.columns), 0)
     writer.save()
+    if os.path.isfile(output_rrs):
+        show_success_msg('Success', 'Successfully coverted radiometer data to the supplied SRF!')
+
 
 # spectral_response_function_file = 'D:/MSU/codes/radiometer_processor/sampledata/Spectral_response_function_micasense_277_1094.csv'
 # site_rrs_path = 'D:/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_interpolate.csv'
@@ -748,20 +761,20 @@ class RadiometerProcessor(QMainWindow, Ui_RrsProcessor):
         :param msg: The message to be displayed.
         :return:
         """
-        msgBox = QMessageBox()
+        msg_box = QMessageBox()
         if title == 'Error':
             icon = QMessageBox.Critical
         elif title == "Information":
             icon = QMessageBox.Information
         else:
             icon = QMessageBox.Information
-        msgBox.setIcon(icon)
-        msgBox.setText(msg)
-        msgBox.setWindowTitle('Radiometer Processor {}'.format(title))
-        msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg_box.setIcon(icon)
+        msg_box.setText(msg)
+        msg_box.setWindowTitle('Radiometer Processor {}'.format(title))
+        msg_box.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         icon_path = self.resource_path('favicon.ico')
-        msgBox.setWindowIcon(QIcon(icon_path))
-        msgBox.exec_()
+        msg_box.setWindowIcon(QIcon(icon_path))
+        msg_box.exec_()
 
     def save_file_dialog(self):
         options = QFileDialog.Options()
