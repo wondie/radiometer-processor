@@ -4,10 +4,10 @@ from osgeo import gdal
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cbook as cbook
-
+from datetime import datetime, timedelta
 import pandas as pd
 from plot import save_plot
-
+# TODO change stats label date to monthly to change the plot x values to monthly
 TIME_SERIES = r'D:\MSU\dissertation\SPM_Multi-spectral\data\discharge\monthly\sites_SPM_monthly.xlsx'
 MONTHS = ['2018_03', '2018_05', '2018_06', '2018_07', '2018_12', '2019_06',
           '2019_07', '2021_07']
@@ -102,42 +102,103 @@ def raster_to_pixel_values():
     return pixel_values
 
 
-def setup_boxplot_data(date='Date', format="%Y-%m"):
-    # global box_plot_mean, uas_spm_values, index, spm_values
-    df = pd.read_excel(TIME_SERIES)
+def setup_boxplot_data_daily(path=None, date='Date', format="%Y-%m"):
+    if path is None:
+        path = TIME_SERIES
+    # global box_plot_mean, uas_spm_values, index, insitu_spm_values
+    df = pd.read_excel(path)
     df = df.replace(np.nan, None)
 
     df = df.reset_index()  # make sure indexes pair with number of rows
-    spm_data = OrderedDict()
-    spm_mean = []
+    insitu_spm_data = OrderedDict()
+    insitu_spm_mean = []
     uas_spm_data = OrderedDict()
     uas_spm_mean = []
     for index, row in df.iterrows():
         curr_date = row[date].to_pydatetime()
         curr_date_str = curr_date.strftime(format)
-        if curr_date_str not in spm_data.keys():
+        if curr_date_str not in insitu_spm_data.keys():
             # uas_spm_values.append(row['UAS SPM'])
-            spm_data[curr_date_str] = []
+            insitu_spm_data[curr_date_str] = []
             uas_spm_data[curr_date_str] = []
         if row['UAS SPM'] is not None:
         # if row['UAS SPM'] is not None:
             uas_spm_data[curr_date_str].append(row['UAS SPM'])
         if row['Insitu SPM'] is not None:
-            spm_data[curr_date_str].append(row['Insitu SPM'])
-    # labels = spm_data.keys()
+            insitu_spm_data[curr_date_str].append(row['Insitu SPM'])
+    # labels = insitu_spm_data.keys()
     # print(uas_spm_data)
-    spm_values = spm_data.values()
+    insitu_spm_values = insitu_spm_data.values()
     uas_spm_values = uas_spm_data.values()
-    for ls in spm_values:
-        spm_mean.append(np.mean(ls))
+    for ls in insitu_spm_values:
+        insitu_spm_mean.append(np.mean(ls))
     for sv in uas_spm_values:
         uas_spm_mean.append(np.mean(sv))
-    return spm_data, uas_spm_data, uas_spm_mean, spm_mean
+    return insitu_spm_data, uas_spm_data, uas_spm_mean, insitu_spm_mean
+
+def setup_boxplot_data_monthly(path=None, date='Date', month_format="%Y-%m", convert_to_date=True, date_format='%m-%d-%Y'):
+    if path is None:
+        path = TIME_SERIES
+    # global box_plot_mean, uas_spm_values, index, insitu_spm_values
+    df = pd.read_excel(path)
+    df = df.replace(np.nan, None)
+
+    df = df.reset_index()  # make sure indexes pair with number of rows
+    insitu_spm_data = OrderedDict()
+    insitu_spm_mean = OrderedDict()
+    uas_spm_data = OrderedDict()
+    uas_spm_mean = OrderedDict()
+    for index, row in df.iterrows():
+        curr_date = row[date].to_pydatetime()
+
+        curr_date_str = curr_date.strftime(month_format)
+        print (curr_date)
 
 
+        if curr_date_str not in insitu_spm_data.keys():
+            # uas_spm_values.append(row['UAS SPM'])
+            # Group months by mission. The starting month will be the mission month
+            close_date = curr_date - timedelta(days=5)
+            curr_date_str = close_date.strftime(month_format)
+            if curr_date_str not in insitu_spm_data.keys():
+                insitu_spm_data[curr_date_str] = []
+                uas_spm_data[curr_date_str] = []
+        if convert_to_date:
+            del insitu_spm_data[curr_date_str]
+            del uas_spm_data[curr_date_str]
+            curr_date_str = datetime.strptime(curr_date_str, month_format).\
+                date().strftime(date_format)
+            if curr_date_str not in insitu_spm_data.keys():
+                insitu_spm_data[curr_date_str] = []
+                uas_spm_data[curr_date_str] = []
+        if row['UAS SPM'] is not None:
+            # if row['UAS SPM'] is not None:
+            uas_spm_data[curr_date_str].append(row['UAS SPM'])
+        if row['Insitu SPM'] is not None:
+            insitu_spm_data[curr_date_str].append(row['Insitu SPM'])
+    # labels = insitu_spm_data.keys()
+    # print(uas_spm_data)
+    # insitu_spm_values = insitu_spm_data.values()
+    # uas_spm_values = uas_spm_data.values()
+    for dt, ls in insitu_spm_data.items():
+        if dt not in insitu_spm_mean.keys():
+            insitu_spm_mean[dt] = []
+        insitu_spm_mean[dt] = np.mean(ls)
+    for dt, ls in uas_spm_data.items():
+        if dt not in uas_spm_mean.keys():
+            uas_spm_mean[dt] = []
+        uas_spm_mean[dt] = np.mean(ls)
 
+    return insitu_spm_data, uas_spm_data, uas_spm_mean, insitu_spm_mean
 
-def add_box_plots(plt, axes, spm_values, spm_uas_mean, spm_mean):
+insitu_spm_data, spm_uas_data, spm_uas_mean, spm_mean = setup_boxplot_data_monthly(
+    r'D:\MSU\dissertation\SPM_Multi-spectral\data\sites_SPM.xlsx', 'Date', '%m-%Y'
+)
+print(insitu_spm_data)
+print(spm_uas_data)
+print(spm_uas_mean)
+print(spm_mean)
+def add_box_plots(plt, axes, insitu_spm_values, spm_uas_mean, spm_mean, format):
     plt.figure(figsize=(10, 5))
 
     axes.plot(np.arange(len(spm_uas_mean)) + 1, spm_uas_mean, marker='o',
@@ -151,8 +212,11 @@ def add_box_plots(plt, axes, spm_values, spm_uas_mean, spm_mean):
     flierprops = dict(marker='o', markerfacecolor='none', markersize=7,
                       linestyle='none', markeredgecolor='#2177e2')
     # print (box_plot_values)
+    # if format is not None:
+    #     temp_insitu_spm_values = OrderedDict()
+    #     for f
     axes.boxplot(
-        spm_values, labels=['', '', '', '', '', '', '', ''],
+        insitu_spm_values, labels=['', '', '', '', '', '', '', ''],
         boxprops=boxprops, medianprops=medianprops,
         capprops=dict(color="#2177e2"),
         whiskerprops=dict(color="#2177e2"),
@@ -184,10 +248,10 @@ def add_box_plots(plt, axes, spm_values, spm_uas_mean, spm_mean):
 
 
 if __name__ == '__main__':
-    spm_values, uas_spm_values, spm_uas_mean, spm_mean = setup_boxplot_data()
+    insitu_spm_values, uas_spm_values, spm_uas_mean, spm_mean = setup_boxplot_data_daily()
     # print (uas_spm_values)'
     fig, axes = plt.subplots(1, 1)
-    add_box_plots(plt, axes,spm_values.values(), spm_uas_mean, spm_mean)
+    add_box_plots(plt, axes, insitu_spm_values.values(), spm_uas_mean, spm_mean, format='%Y-%m')
     axes.grid(True)
     # plt.xlabel('Sampling Periods')
     axes.set(xlabel="Sampling Periods", ylabel='SPM (mg/L)')

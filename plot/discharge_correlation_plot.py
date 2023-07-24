@@ -13,7 +13,10 @@ def prepare_SPM_discharge_corr_data(x_path, y_path, x_field_name, y_field_name,
                                     x_date_field, y_date_field,
                                     residence_time=None):
     x_df, y_df = read_xy_data(x_path, y_path)
-    date_objs, x_daily_values, y_daily_values_cont = group_data_by_date(x_df, y_df, x_date_field,
+    # print (x_date_field,
+    #        x_field_name, y_date_field,
+    #        [y_field_name])
+    date_objs, x_daily_values, y_daily_values_cont, insitu_spm_table = group_data_by_date(x_df, y_df, x_date_field,
                                                  x_field_name, y_date_field,
                                                  [y_field_name])
     y_daily_values = y_daily_values_cont[0]
@@ -28,7 +31,7 @@ def prepare_SPM_discharge_corr_data(x_path, y_path, x_field_name, y_field_name,
         corrected_date = curr_date_obj - timedelta(days=residence_time)
         corrected_date_str = corrected_date.strftime("%m-%d-%Y")
         if corrected_date_str in y_daily_values.keys():
-            if y_daily_values[corrected_date_str] is not None:
+            if y_daily_values[corrected_date_str] is not None and y_daily_values[corrected_date_str] != 0:
                 x_plot_data.append(x_data)
                 y_plot_data.append(y_daily_values[corrected_date_str])
 
@@ -74,50 +77,39 @@ def create_scatter_plot(x, y, color, x_field_name, y_field_name):
     save_plot(plt, 'poster', '{} {}'.format(x_field_name, y_field_name))
 
 
-SPM_path = r'D:\MSU\dissertation\SPM_Multi-spectral\data\discharge\sites_SPM.xlsx'
+SPM_path = r'D:\MSU\dissertation\SPM_Multi-spectral\data\discharge\daily\sites_SPM_daily.xlsx'
 discharge_path = r'D:\MSU\dissertation\SPM_Multi-spectral\data\discharge\daily\discharge_daily_combined.xlsx'
 pearl_river_path = r'D:\MSU\dissertation\SPM_Multi-spectral\data\discharge\daily\Pearl.xlsx'
 x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'Insitu SPM',
-                                       'Jourdan River', 'Date', 'Date', 4)
+                                       'Jourdan River', 'Date', 'Date', 16)
 create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Jourdan River')
 
 x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'Insitu SPM',
-                                       'Wolf River', 'Date', 'Date', 4)
+                                       'Wolf River', 'Date', 'Date', 13)
 create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Wolf River')
 x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'Insitu SPM',
-                                       'Pearl River', 'Date', 'Date', 4)
-create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Pearl River')
-
-x, y = prepare_SPM_discharge_corr_data(SPM_path, pearl_river_path,
-                                       'Insitu SPM', 'discharge', 'Date',
-                                       'date', 4)
+                                       'Pearl River', 'Date', 'Date', 39)
 create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Pearl River')
 
 x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'Insitu SPM',
                                        'Bonnet Carre Spillway', 'Date', 'Date',
-                                       6)
+                                       17)
 create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Bonnet Carre Spillway')
 
 
 
 
 x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'UAS SPM',
-                                       'Jourdan River', 'Date', 'Date', 4)
+                                       'Jourdan River', 'Date', 'Date', 16)
 create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Jourdan River')
 
 x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'UAS SPM',
-                                       'Wolf River', 'Date', 'Date', 4)
+                                       'Wolf River', 'Date', 'Date', 13)
 create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Wolf River')
 x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'UAS SPM',
-                                       'Pearl River', 'Date', 'Date', 4)
-create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Pearl River')
-
-x, y = prepare_SPM_discharge_corr_data(SPM_path, pearl_river_path,
-                                       'UAS SPM', 'discharge', 'Date',
-                                       'date', 4)
+                                       'Pearl River', 'Date', 'Date', 39)
 create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Pearl River')
 
 x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'UAS SPM',
-                                       'Bonnet Carre Spillway', 'Date', 'Date',
-                                       6)
+                                       'Bonnet Carre Spillway', 'Date', 'Date', 17)
 create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Bonnet Carre Spillway')

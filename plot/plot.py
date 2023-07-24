@@ -228,57 +228,60 @@ def read_data(data_path):
 
     # read data
     return df
-def group_data_by_date(x_df, y_df, x_date_field, x_field_name, y_date_field,
-                       y_fields, equal_dates=False, y01_field=None):
+def group_data_by_date(spm_df, discharge_df, spm_date_field, uas_spm_field, discharge_date_field,
+                       discharge_fields, equal_dates=False, insitu_spm_field=None):
     y_daily_values_cont = []
-    y01_values = OrderedDict()
+    insitu_spm_values = OrderedDict()
     # if len(y_fields) > 1:
-    for y_field in y_fields:
-        y_daily_values = OrderedDict()
-        for index, row in y_df.iterrows():
-            curr_date = row[y_date_field].to_pydatetime()
+    for discharge_field in discharge_fields:
+        discharge_daily_values = OrderedDict()
+        for index, row in discharge_df.iterrows():
+            curr_date = row[discharge_date_field].to_pydatetime()
             curr_date_str = curr_date.strftime("%m-%d-%Y")
             # print (row[y_field])
-            if row[y_field] is not None:
-                y_daily_values[curr_date_str] = float(row[y_field])
+            if row[discharge_field] is not None:
+                discharge_daily_values[curr_date_str] = float(row[discharge_field])
             else:
-                y_daily_values[curr_date_str] = 0
+                discharge_daily_values[curr_date_str] = 0
 
-        y_daily_values_cont.append(y_daily_values)
+        y_daily_values_cont.append(discharge_daily_values)
 
 
-    x_daily_data = OrderedDict()
-    x_daily_values = OrderedDict()
+    uas_spm_daily_data = OrderedDict()
+    uas_spm_daily_values = OrderedDict()
 
-    for index, row in x_df.iterrows():
-        curr_date = row[x_date_field].to_pydatetime()
+    for index, row in spm_df.iterrows():
+        curr_date = row[spm_date_field].to_pydatetime()
         curr_date_str = curr_date.strftime("%m-%d-%Y")
-        if y01_field is not None:
-            y01_values[curr_date_str] = row[y01_field]
-        if curr_date_str not in x_daily_data.keys():
-            x_daily_data[curr_date_str] = []
+        if insitu_spm_field is not None:
+            insitu_spm_values[curr_date_str] = row[insitu_spm_field]
+        if curr_date_str not in uas_spm_daily_data.keys():
+            uas_spm_daily_data[curr_date_str] = []
 
-        x_daily_data[curr_date_str].append(row[x_field_name])
+        uas_spm_daily_data[curr_date_str].append(row[uas_spm_field])
     # average SPM data - x data
     date_objs = []
     if equal_dates:
-        daily_x_dates = x_daily_data.keys()
+        daily_x_dates = uas_spm_daily_data.keys()
         for curr_y_date, y_data in y_daily_values_cont[0].items():
             date_objs.append(datetime.strptime(curr_y_date, '%m-%d-%Y'))
             if curr_y_date in daily_x_dates:
-                # print (x_daily_data[curr_y_date])
-                x_daily_values[curr_y_date] = np.mean(x_daily_data[curr_y_date])
+                # print (uas_spm_daily_data[curr_y_date])
+                uas_spm_daily_values[curr_y_date] = np.mean(uas_spm_daily_data[curr_y_date])
             else:
-                x_daily_values[curr_y_date] = None
+                uas_spm_daily_values[curr_y_date] = None
     else:
-        for curr_date, x_data in x_daily_data.items():
+        for curr_date, x_data in uas_spm_daily_data.items():
             # print (x_data)
-            x_daily_values[curr_date] = np.mean(x_data)
+            uas_spm_daily_values[curr_date] = np.mean(x_data)
             date_objs.append(datetime.strptime(curr_date, '%m-%d-%Y'))
     # organize discharge data by date
-    return date_objs, x_daily_values, y_daily_values_cont, y01_values
+    print(insitu_spm_values)
+    return date_objs, uas_spm_daily_values, y_daily_values_cont, insitu_spm_values
 
-
+# spm_data, spm_uas_data, spm_uas_mean, spm_mean = setup_boxplot_data(
+#     None, 'Date', '%m-%d-%Y'
+# )
 def run_plot():
     central_lon = np.mean(extent[:2])
     central_lat = np.mean(extent[2:])
