@@ -276,7 +276,7 @@ def group_data_by_date(spm_df, discharge_df, spm_date_field, uas_spm_field, disc
             uas_spm_daily_values[curr_date] = np.mean(x_data)
             date_objs.append(datetime.strptime(curr_date, '%m-%d-%Y'))
     # organize discharge data by date
-    print(insitu_spm_values)
+    # print(insitu_spm_values)
     return date_objs, uas_spm_daily_values, y_daily_values_cont, insitu_spm_values
 
 # spm_data, spm_uas_data, spm_uas_mean, spm_mean = setup_boxplot_data(

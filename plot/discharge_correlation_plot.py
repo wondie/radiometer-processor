@@ -80,36 +80,118 @@ def create_scatter_plot(x, y, color, x_field_name, y_field_name):
 SPM_path = r'D:\MSU\dissertation\SPM_Multi-spectral\data\discharge\daily\sites_SPM_daily.xlsx'
 discharge_path = r'D:\MSU\dissertation\SPM_Multi-spectral\data\discharge\daily\discharge_daily_combined.xlsx'
 pearl_river_path = r'D:\MSU\dissertation\SPM_Multi-spectral\data\discharge\daily\Pearl.xlsx'
-x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'Insitu SPM',
-                                       'Jourdan River', 'Date', 'Date', 16)
-create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Jourdan River')
+# x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'Insitu SPM',
+#                                        'Jourdan River', 'Date', 'Date', 16)
+# create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Jourdan River')
+#
+# x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'Insitu SPM',
+#                                        'Wolf River', 'Date', 'Date', 13)
+# create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Wolf River')
+# x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'Insitu SPM',
+#                                        'Pearl River', 'Date', 'Date', 39)
+# create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Pearl River')
+#
+# x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'Insitu SPM',
+#                                        'Bonnet Carre Spillway', 'Date', 'Date',
+#                                        17)
+# create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Bonnet Carre Spillway')
+#
+#
+#
+#
+# x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'UAS SPM',
+#                                        'Jourdan River', 'Date', 'Date', 16)
+# create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Jourdan River')
+#
+# x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'UAS SPM',
+#                                        'Wolf River', 'Date', 'Date', 13)
+# create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Wolf River')
+# x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'UAS SPM',
+#                                        'Pearl River', 'Date', 'Date', 39)
+# create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Pearl River')
+#
+# x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'UAS SPM',
+#                                        'Bonnet Carre Spillway', 'Date', 'Date', 17)
+# create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Bonnet Carre Spillway')
 
-x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'Insitu SPM',
-                                       'Wolf River', 'Date', 'Date', 13)
-create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Wolf River')
-x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'Insitu SPM',
-                                       'Pearl River', 'Date', 'Date', 39)
-create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Pearl River')
-
-x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'Insitu SPM',
-                                       'Bonnet Carre Spillway', 'Date', 'Date',
-                                       17)
-create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Bonnet Carre Spillway')
+def loop_correlation(river, SPM_type, transit_time, correlations):
+    x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, '{} SPM'.format(SPM_type),
+                                           river, 'Date', 'Date', transit_time)
+    if transit_time not in correlations.keys():
+        correlations[transit_time] = []
+    correlations[transit_time].append(np.corrcoef(x, y)[0][1])
 
 
+correlations = {}
+for i in range(1, 100):
+    loop_correlation('Jourdan River', 'Insitu', i, correlations)
+
+print ('Insitu')
+best_corr =  max(correlations.values())
+transit_time = list(correlations.keys())[list(correlations.values()).index(best_corr)]
+print ('Jourdan River', transit_time, best_corr)
 
 
-x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'UAS SPM',
-                                       'Jourdan River', 'Date', 'Date', 16)
-create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Jourdan River')
+correlations = {}
+for i in range(1, 100):
+    loop_correlation('Wolf River', 'Insitu', i, correlations)
 
-x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'UAS SPM',
-                                       'Wolf River', 'Date', 'Date', 13)
-create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Wolf River')
-x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'UAS SPM',
-                                       'Pearl River', 'Date', 'Date', 39)
-create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Pearl River')
+best_corr =  max(correlations.values())
+transit_time = list(correlations.keys())[list(correlations.values()).index(best_corr)]
+print ('Wolf River', transit_time, best_corr)
 
-x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'UAS SPM',
-                                       'Bonnet Carre Spillway', 'Date', 'Date', 17)
-create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Bonnet Carre Spillway')
+
+correlations = {}
+for i in range(1, 100):
+    loop_correlation('Pearl River', 'Insitu', i, correlations)
+
+best_corr = max(correlations.values())
+transit_time = list(correlations.keys())[list(correlations.values()).index(best_corr)]
+print ('Pearl River', transit_time, best_corr)
+
+
+
+correlations = {}
+for i in range(1, 100):
+    loop_correlation('Bonnet Carre Spillway', 'Insitu', i, correlations)
+
+best_corr = max(correlations.values())
+transit_time = list(correlations.keys())[list(correlations.values()).index(best_corr)]
+print ('Bonnet Carre Spillway', transit_time, best_corr)
+
+
+
+correlations = {}
+for i in range(1, 100):
+    loop_correlation('Jourdan River', 'UAS', i, correlations)
+
+print ( 'UAS')
+best_corr = max(correlations.values())
+transit_time = list(correlations.keys())[list(correlations.values()).index(best_corr)]
+print ('Jourdan River', transit_time, best_corr)
+
+correlations = {}
+for i in range(1, 100):
+    loop_correlation('Wolf River', 'UAS', i, correlations)
+
+best_corr = max(correlations.values())
+transit_time = list(correlations.keys())[list(correlations.values()).index(best_corr)]
+print ('Wolf River', transit_time, best_corr)
+
+
+correlations = {}
+for i in range(1, 100):
+    loop_correlation('Pearl River', 'UAS', i, correlations)
+
+best_corr = max(correlations.values())
+transit_time = list(correlations.keys())[list(correlations.values()).index(best_corr)]
+print ('Pearl River', transit_time, best_corr)
+
+
+correlations = {}
+for i in range(1, 100):
+    loop_correlation('Bonnet Carre Spillway', 'UAS', i, correlations)
+
+best_corr = max(correlations.values())
+transit_time = list(correlations.keys())[list(correlations.values()).index(best_corr)]
+print ('Bonnet Carre Spillway', transit_time, best_corr)
