@@ -187,8 +187,8 @@ def plot_data(spm_path, discharge_path, insitu_spm_field, uas_spm_field,
     ax.legend(handles=[p, p0, p1, p2, p3, p4], loc=4)
     save_plot(plt, 'poster', 'SPM and Discharge')
 
-SPM_path = r'D:\MSU\dissertation\SPM_Multi-spectral\data\sites_SPM.xlsx'
-discharge_path = r'D:\MSU\dissertation\SPM_Multi-spectral\data\discharge\daily\discharge_daily_combined.xlsx'
+SPM_path = r'C:\Users\andex\OneDrive\Documents\MSU\dissertation\SPM_Multi-spectral\data\sites_SPM.xlsx'
+discharge_path = r'C:\Users\andex\OneDrive\Documents\MSU\dissertation\SPM_Multi-spectral\data\discharge\daily\discharge_daily_combined.xlsx'
 
 plot_data(SPM_path, discharge_path, 'Insitu SPM', 'UAS SPM', 'Date', 'Jourdan River', 'Wolf River','Pearl River','Bonnet Carre Spillway', 'SPM (mg/L)', 'Gauge Height','Discharge (cpfs)','Date', 4)
 

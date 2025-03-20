@@ -34,7 +34,7 @@ from sympy import Add
 # TODO Simplified function ends up missing multiplication between two bands
 BANDS = {'red':'R_{rs}668', 'rededge':'R_{rs}717', 'NIR': 'R_{rs}842'}
 
-TESTING_OUTPUT_PATH = 'D:/MSU/codes/radiometer_processor/data/testing_output.xlsx'
+TESTING_OUTPUT_PATH = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/data/testing_output.xlsx'
 def minimize_1(coef, df, bands, return_df=False):
     # print (bands)
     a, b, c = bands
@@ -314,7 +314,7 @@ def solver(df, fun, bands, coefficients, minimum_rsquared):
         #       " guess or optimization method")
 
 
-# solver('D:/MSU/codes/radiometer_processor/data/mic.xlsx')
+# solver('C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/data/mic.xlsx')
 # def mean_absolute_percentage_error(y_true, y_pred):
 #     y_true, y_pred = np.array(y_true), np.array(y_pred)
 #     return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
@@ -534,9 +534,9 @@ equations = {
     # '(a/b)': minimize_19
 }
 
-file_path = 'D:/MSU/codes/radiometer_processor/data/mic.xlsx'
-testing_path = 'D:/MSU/dissertation/SPM Testing/Mic4_3_final_testing.xlsx'
-output_path = 'D:/MSU/codes/radiometer_processor/data/output.xlsx'
+file_path = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/data/mic.xlsx'
+testing_path = 'C:/Users/andex/OneDrive/Documents/MSU/dissertation/SPM Testing/Mic4_3_final_testing.xlsx'
+output_path = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/data/output.xlsx'
 
 algorithm_data_df = pd.read_excel(file_path)
 testing_data_df = pd.read_excel(testing_path)

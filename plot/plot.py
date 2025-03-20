@@ -55,7 +55,7 @@ def add_plot(data, ax, title, colorbar, code, min_cut=None,max_cut=None,min_p=No
         linestyle='solid', linewidth=1, zorder=11)
 
     # shape_feature = feature.ShapelyFeature(Reader(
-    #     'D:/MSU/RA/acidification/bathymetry/GoM_200m.shp').geometries(),
+    #     'C:/Users/andex/OneDrive/Documents/MSU/RA/acidification/bathymetry/GoM_200m.shp').geometries(),
     #                                ccrs.PlateCarree(), facecolor='none')
     # ax.add_feature(shape_feature, facecolor='none',
     #                edgecolor='black', linestyle='solid', linewidth=1, zorder=11)
@@ -108,7 +108,13 @@ def save_plot(plt, size, file_name=None):
         # print("Failed")
         if file_name is None:
             file_name = 'boxplot'
-        plt.savefig(r'D:\MSU\codes\radiometer_processor\data\{}.png'.format(file_name), dpi = style['dpi'])
+        # plt.figure(figsize=style['fig_size'])
+        # if fig is not None:
+        fig = plt.gcf()
+        # Adjust the figure size to 10 inches wide and 5 inches tall
+        fig.set_size_inches(style['fig_size'][0], style['fig_size'][1])
+
+        plt.savefig(r'C:\Users\andex\OneDrive\Documents\MSU\codes\radiometer_processor\data\output\{}.png'.format(file_name), dpi = style['dpi'])
         plt.show()
 def create_scatter_plot(actual, estimated, validation, model, training_y, training_x, r2, equation_latex, size='paper'):
 
@@ -128,7 +134,7 @@ def create_scatter_plot(actual, estimated, validation, model, training_y, traini
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         # print("Failed")
-        plt.savefig(r'D:\MSU\codes\radiometer_processor\data\result_{}.png'.format(r2),
+        plt.savefig(r'C:\Users\andex\OneDrive\Documents\MSU\codes\radiometer_processor\data\result_{}.png'.format(r2),
                 dpi = style['dpi'])
         fig.show()
 
@@ -139,6 +145,10 @@ def plot_size(size):
     if size == 'poster':
         style = {'fig_size': (20, 10), 'point_size': 50, 'plot_font_size': 24,
                  'label_font_size': 30, 'dpi': 500}
+    if size == 'poster_wide':
+        style = {'fig_size': (14, 7), 'point_size': 50, 'plot_font_size': 13,
+                 'label_font_size': 30, 'dpi': 500}
+
     if size == 'ppt':
         style = {'fig_size': (10, 5), 'point_size': 30, 'plot_font_size': 10,
                  'label_font_size': 15, 'dpi': 300}
@@ -287,12 +297,12 @@ def run_plot():
     central_lat = np.mean(extent[2:])
     fig, axes = plt.subplots(2, 3, figsize=(45, 37), subplot_kw={
         'projection': ccrs.AlbersEqualArea(central_lon, central_lat)})
-    sal = read_tif_to_array('D:/MSU/RA/acidification/acidification/salinity/salinity.tif')
-    ph = read_tif_to_array('D:/MSU/RA/acidification/acidification/ph/pH.tif')
-    ast = read_tif_to_array('D:/MSU/RA/acidification/acidification/ast/omega_Ar.tif')
-    css = read_tif_to_array('D:/MSU/RA/acidification/acidification/css/omega_Ca.tif')
-    spcp = read_tif_to_array('D:/MSU/RA/acidification/acidification/spcp/spCO2_micro.tif')
-    ta = read_tif_to_array('D:/MSU/RA/acidification/acidification/ta/TA.tif')
+    sal = read_tif_to_array('C:/Users/andex/OneDrive/Documents/MSU/RA/acidification/acidification/salinity/salinity.tif')
+    ph = read_tif_to_array('C:/Users/andex/OneDrive/Documents/MSU/RA/acidification/acidification/ph/pH.tif')
+    ast = read_tif_to_array('C:/Users/andex/OneDrive/Documents/MSU/RA/acidification/acidification/ast/omega_Ar.tif')
+    css = read_tif_to_array('C:/Users/andex/OneDrive/Documents/MSU/RA/acidification/acidification/css/omega_Ca.tif')
+    spcp = read_tif_to_array('C:/Users/andex/OneDrive/Documents/MSU/RA/acidification/acidification/spcp/spCO2_micro.tif')
+    ta = read_tif_to_array('C:/Users/andex/OneDrive/Documents/MSU/RA/acidification/acidification/ta/TA.tif')
 
 # add_plot(sal, axes[0, 0], 'Salinity', haline, '(a)', max_cut=40)
     # add_plot(ta, axes[0, 1], 'Total Alkalinity in µmol/kg', haline, '(b)')
@@ -316,7 +326,7 @@ def run_plot():
     fig.subplots_adjust(wspace=0, hspace=0)
     # fig.set_tight_layout(False)
     # plt.show()
-    fig.savefig('D:/MSU/RA/acidification/acidif'
+    fig.savefig('C:/Users/andex/OneDrive/Documents/MSU/RA/acidification/acidif'
                 'ication/acid2022_c.png', dpi=150, bbox_inches='tight')
     #
     # add_plot(sal, axes[0, 0], 'Salinity', haline, '(a)')

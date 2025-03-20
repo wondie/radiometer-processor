@@ -3,8 +3,9 @@ import os
 from collections import OrderedDict
 import math
 import pandas as pd
+import time
 
-path = 'D:/MSU/codes/radiometer_processor/sampledata/processed/'
+path = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/processed/'
 
 def prepare_irradiance(path):
     """
@@ -125,7 +126,7 @@ def create_xlsx_chart(df, output_xlsx, chart_start=None):
         chart_start = len(df.columns) - 3
     df.to_excel(writer, sheet_name='Sheet1')
     create_chart(df, writer, chart_start, len(df.columns) + 1)
-    writer.save()
+    # writer.close()
     print ('Written: ', output_xlsx)
 
 
@@ -160,8 +161,8 @@ def create_chart(df, writer, start, end, x_label=1):
     chart_sheet.set_chart(chart)
 
 # After creating average using good observation if there is a bad data,
-# copy all to one folder in this case Site. The are required to be xlsx file contaning WMS and Water
-all_rrs = 'D:/MSU/codes/radiometer_processor/sampledata/2020/Sites'
+# copy all to one folder in this case Site. They are required to be xlsx file containing WMS and Water
+all_rrs = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/Sites'
 def collect_sites_rrs_to_single_sheet(path, exclusions=[]):
     """
     Creates site RRS from different sites into single sheet
@@ -195,15 +196,15 @@ def collect_sites_rrs_to_single_sheet(path, exclusions=[]):
     new_df = pd.concat(df_cols.values(), axis=1, keys=df_cols.keys())
     new_df.to_excel(writer, sheet_name='Sheet1')
     create_chart(new_df, writer, 2, len(new_df.columns) + 1)
-    writer.save()
+    # writer.close()
 
 # collect_sites_rrs_to_single_sheet(all_rrs, exclusions=['57', '58', '63'])
-# process_reflectance('D:/MSU/codes/radiometer_processor/sampledata/2020/WMS')
-rrs = 'D:/MSU/codes/radiometer_processor/sampledata/2020/Sites/WMS_Rrs.xlsx'
+# process_reflectance('C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/WMS')
+rrs = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/Sites/WMS_Rrs.xlsx'
 
 def interpolate(xlsx_file_path, min, max):
     """
-    Interpolate the site Rrs data into one step increment
+    Interpolate the site Rrs data into one-step increment
     :param xlsx_file_path: The file bath of all sites combined Rrs xlsx file
     :type xlsx_file_path: String
     :param min: The minimum wavelength value
@@ -227,7 +228,7 @@ def interpolate(xlsx_file_path, min, max):
     writer = pd.ExcelWriter(output_xlsx, engine='xlsxwriter')
     y.to_excel(writer, sheet_name='Sheet1', index=False)
     create_chart(y, writer, 1, len(y.columns), 0)
-    writer.save()
+    # writer.close()
 
 #interpolate(rrs, 277, 1094)
 def merge_spreadsheet(xlsx_path1, xlsx_path2, combined_path):
@@ -249,12 +250,12 @@ def merge_spreadsheet(xlsx_path1, xlsx_path2, combined_path):
     writer = pd.ExcelWriter(combined_path, engine='xlsxwriter')
     df3.to_excel(writer, sheet_name='Sheet1', index=False)
     create_chart(df3, writer, 1, len(df3.columns), 0)
-    writer.save()
+    # writer.save()
 
 # merge_spreadsheet(
-#     'D:/MSU/codes/radiometer_processor/sampledata/2020/Radiometer_rrs.xlsx',
-#     'D:/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_interpolate.xlsx',
-#   'D:/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_combined.xlsx'
+#     'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/Radiometer_rrs.xlsx',
+#     'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_interpolate.xlsx',
+#   'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_combined.xlsx'
 # )
 
 
@@ -267,7 +268,7 @@ def convert_hyperspectral_to_multispectral(srf_csv, rrs_csv, output_rrs):
     wavelength, response value for each subsequent bands from the start
     to end of the wavelengths.
     :type srf_csv: String
-    :param rrs_csv: contains a csv file with reflectance value for each sites.
+    :param rrs_csv: contains a csv file with reflectance value for each site.
     The columns are wavelength(should match srf_csv wavelength),
     sites reflectance values for each wavelength.
     :type rrs_csv: String
@@ -302,25 +303,25 @@ def convert_hyperspectral_to_multispectral(srf_csv, rrs_csv, output_rrs):
                 final_dic[col_srf] = [sum(p1) / sum(new_df[col_srf])]
 
     final_df = pd.DataFrame(final_dic, columns=final_cols)
-    writer = pd.ExcelWriter(output_rrs, engine='xlsxwriter')
-    final_df.to_excel(writer, sheet_name='Sheet1', index=False)
-    create_chart(final_df, writer, 1, len(final_df.columns), 0)
-    writer.save()
+    with pd.ExcelWriter(output_rrs, engine='xlsxwriter') as writer:
+        final_df.to_excel(writer, sheet_name='Sheet1', index=False)
+        create_chart(final_df, writer, 1, len(final_df.columns), 0)
+        writer.close()
 
-# spectral_response_function_file = 'D:/MSU/codes/radiometer_processor/sampledata/Spectral_response_function_micasense_277_1094.csv'
-# site_rrs_path = 'D:/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_interpolate.csv'
-# output = 'D:/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_micasense.xlsx'
+# spectral_response_function_file = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/Spectral_response_function_micasense_277_1094.csv'
+# site_rrs_path = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_interpolate.csv'
+# output = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_micasense.xlsx'
 # convert_hyperspectral_to_multispectral(spectral_response_function_file, site_rrs_path, output)
 
-spectral_response_function_file = r'D:\MSU\SPM_MODIS\Spectral_response_function_modis.csv'
-site_rrs_path = r'D:\MSU\SPM_MODIS\WMS_Rrs_combined.csv'
-output = r'D:\MSU\SPM_MODIS\WMS_Rrs_modis.xlsx'
+spectral_response_function_file = r'C:\Users\andex\OneDrive\Documents\MSU\SPM_MODIS\Spectral_response_function_modis.csv'
+site_rrs_path = r'C:\Users\andex\OneDrive\Documents\MSU\SPM_MODIS\WMS_Rrs_combined.csv'
+output = r'C:\Users\andex\OneDrive\Documents\MSU\SPM_MODIS\WMS_Rrs_modis.xlsx'
 # convert_hyperspectral_to_multispectral(spectral_response_function_file, site_rrs_path, output)
 
 
 def merge_two_column(xlsx_path1, xlsx_path2, common_column, output_path):
     """
-    Merge two excel sheets by common column values.
+    Merge two Excel sheets by common column values.
     :param xlsx_path1: Xlsx path 1
     :type xlsx_path1: String
     :param xlsx_path2: Xlsx path 2
@@ -334,21 +335,34 @@ def merge_two_column(xlsx_path1, xlsx_path2, common_column, output_path):
     """
     path1 = pd.read_excel(xlsx_path1, 'Sheet1', engine='openpyxl')
     path2 = pd.read_excel(xlsx_path2, 'Sheet1', engine='openpyxl')
-    print (path1)
+    # print ('path1', path1)
+    # print ('path2', path2)
     new_df = pd.merge(path1, path2, on=common_column)
-    print (new_df)
+    # print ('new_df', new_df)
     # final_df = pd.DataFrame(final_dic, columns=final_cols)
-    writer = pd.ExcelWriter(output_path, engine='xlsxwriter')
-    new_df.to_excel(writer, sheet_name='Sheet1', index=False)
-    create_chart(new_df, writer, 1, len(new_df.columns), 0)
-    writer.save()
-    # print (new_df)
+    print (output_path)
+    # try:
+    #     with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
+    #         print ('err1')
+    #         new_df.to_excel(writer, sheet_name='Sheet1', index=False)
+    #         print ('err2')
+    #         create_chart(new_df, writer, 1, len(new_df.columns), 0)
+    # except Exception as err:
 
-spm = 'D:/MSU/codes/radiometer_processor/sampledata/2020/spm.xlsx'
-# micasense_path = 'D:/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_micasense.xlsx'
-# combined_path = 'D:/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_micasense_SPM.xlsx'
+    with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
+        print ('err1')
+        time.sleep(15)
+        new_df.to_excel(writer, sheet_name='Sheet1', index=False)
+        print ('err2')
+        create_chart(new_df, writer, 1, len(new_df.columns), 0)
+
+    print ('new_df')
+
+spm = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/spm.xlsx'
+# micasense_path = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_micasense.xlsx'
+# combined_path = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_micasense_SPM.xlsx'
 # merge_two_column(spm, micasense_path, 'Sites', combined_path)
 
-# micasense_path = 'D:/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_micasense.xlsx'
-combined_path = r'D:\MSU\SPM_MODIS\WMS_Rrs_modis_SPM.xlsx'
+# micasense_path = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_micasense.xlsx'
+combined_path = r'C:\Users\andex\OneDrive\Documents\MSU\SPM_MODIS\WMS_Rrs_modis_SPM.xlsx'
 merge_two_column(spm, output, 'Sites', combined_path)

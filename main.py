@@ -32,7 +32,7 @@ from PyQt5.QtWidgets import (
     QMainWindow, QApplication,
     QFileDialog, QLineEdit, QMessageBox, QTreeWidgetItem)
 from ui.processor import Ui_RrsProcessor
-# data_path = 'D:/MSU/codes/radiometer_processor/sampledata/processed/'
+# data_path = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/processed/'
 PREFIX = 'water'
 def prepare_irradiance(path):
     """
@@ -261,8 +261,8 @@ def create_chart(df, writer, start, end, x_label=1):
 
 # After creating average using good observation if there is a bad data,
 # copy all to one folder in this case Site. The are required to be xlsx file contaning WMS and Water
-# all_rrs = 'D:/MSU/codes/radiometer_processor/sampledata/2020/sites'
-# all_rrs = r'D:\MSU\SPM Testing\WMS_2020_2021\WMS_2020_2021'
+# all_rrs = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/sites'
+# all_rrs = r'C:\Users\andex\OneDrive\Documents\MSU\SPM Testing\WMS_2020_2021\WMS_2020_2021'
 def collect_sites_rrs_to_single_sheet(path, exclusions=[]):
     """
     Creates site RRS from different sites into single sheet
@@ -335,8 +335,8 @@ def collect_rrs_to_single_sheet(processed_df):
     return output_xlsx
 
 # collect_sites_rrs_to_single_sheet(all_rrs, exclusions=['57', '58', '63'])
-# process_reflectance('D:/MSU/codes/radiometer_processor/sampledata/2020/WMS')
-# rrs = 'D:/MSU/codes/radiometer_processor/sampledata/2020/sites/WMS_Rrs.xlsx'
+# process_reflectance('C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/WMS')
+# rrs = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/sites/WMS_Rrs.xlsx'
 
 def interpolate(xlsx_file_path, min, max):
     """
@@ -447,9 +447,9 @@ def merge_spreadsheet(list_of_files, combined_path):
 
 
 # merge_spreadsheet(
-#     'D:/MSU/codes/radiometer_processor/sampledata/2020/Radiometer_rrs.xlsx',
-#     'D:/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_interpolate.xlsx',
-#   'D:/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_combined.xlsx'
+#     'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/Radiometer_rrs.xlsx',
+#     'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_interpolate.xlsx',
+#   'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_combined.xlsx'
 # )
 
 
@@ -518,14 +518,14 @@ def convert_hyperspectral_to_multispectral(srf_path, rrs_path, output_rrs):
         show_success_msg('Success', 'Successfully coverted radiometer data to the supplied SRF!')
 
 
-# spectral_response_function_file = 'D:/MSU/codes/radiometer_processor/sampledata/Spectral_response_function_micasense_277_1094.csv'
-# site_rrs_path = 'D:/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_interpolate.csv'
-# output = 'D:/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_micasense.xlsx'
+# spectral_response_function_file = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/Spectral_response_function_micasense_277_1094.csv'
+# site_rrs_path = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_interpolate.csv'
+# output = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_micasense.xlsx'
 # convert_hyperspectral_to_multispectral(spectral_response_function_file, site_rrs_path, output)
 
-spectral_response_function_file = r'D:\MSU\SPM_MODIS\Spectral_response_function_modis.csv'
-site_rrs_path = r'D:\MSU\SPM_MODIS\WMS_Rrs_combined.csv'
-output = r'D:\MSU\SPM_MODIS\WMS_Rrs_modis.xlsx'
+spectral_response_function_file = r'C:\Users\andex\OneDrive\Documents\MSU\SPM_MODIS\Spectral_response_function_modis.csv'
+site_rrs_path = r'C:\Users\andex\OneDrive\Documents\MSU\SPM_MODIS\WMS_Rrs_combined.csv'
+output = r'C:\Users\andex\OneDrive\Documents\MSU\SPM_MODIS\WMS_Rrs_modis.xlsx'
 # convert_hyperspectral_to_multispectral(spectral_response_function_file, site_rrs_path, output)
 
 
@@ -555,13 +555,13 @@ def merge_two_column(xlsx_path1, xlsx_path2, common_column, output_path):
     writer.save()
     # print (new_df)
 
-spm = 'D:/MSU/codes/radiometer_processor/sampledata/2020/spm.xlsx'
-# micasense_path = 'D:/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_micasense.xlsx'
-# combined_path = 'D:/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_micasense_SPM.xlsx'
+spm = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/spm.xlsx'
+# micasense_path = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_micasense.xlsx'
+# combined_path = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_micasense_SPM.xlsx'
 # merge_two_column(spm, micasense_path, 'sites', combined_path)
 
-# micasense_path = 'D:/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_micasense.xlsx'
-combined_path = r'D:\MSU\SPM_MODIS\WMS_Rrs_modis_SPM.xlsx'
+# micasense_path = 'C:/Users/andex/OneDrive/Documents/MSU/codes/radiometer_processor/sampledata/2020/WMS_Rrs_micasense.xlsx'
+combined_path = r'C:\Users\andex\OneDrive\Documents\MSU\SPM_MODIS\WMS_Rrs_modis_SPM.xlsx'
 # merge_two_column(spm, output, 'sites', combined_path)
 
 
@@ -916,5 +916,5 @@ if __name__ == "__main__":
 
     main()
 #
-# raw_path = r'D:\MSU\SPM Testing\WMS_2020_2021\WMS_1_12_06022021'
+# raw_path = r'C:\Users\andex\OneDrive\Documents\MSU\SPM Testing\WMS_2020_2021\WMS_1_12_06022021'
 # calculate_reflectance(raw_path)

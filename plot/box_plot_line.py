@@ -6,9 +6,10 @@ import matplotlib.pyplot as plt
 import matplotlib.cbook as cbook
 from datetime import datetime, timedelta
 import pandas as pd
-from plot import save_plot
+from plot import save_plot, plot_size
+
 # TODO change stats label date to monthly to change the plot x values to monthly
-TIME_SERIES = r'D:\MSU\dissertation\SPM_Multi-spectral\data\discharge\monthly\sites_SPM_monthly.xlsx'
+TIME_SERIES = r'C:\Users\andex\OneDrive\Documents\MSU\dissertation\SPM_Multi-spectral\data\discharge\monthly\sites_SPM_monthly.xlsx'
 MONTHS = ['2018_03', '2018_05', '2018_06', '2018_07', '2018_12', '2019_06',
           '2019_07', '2021_07']
 stats = {'2018-03': {'label': '03-01-2018', 'mean': 48.49413536058343,
@@ -192,21 +193,19 @@ def setup_boxplot_data_monthly(path=None, date='Date', month_format="%Y-%m", con
     return insitu_spm_data, uas_spm_data, uas_spm_mean, insitu_spm_mean
 
 insitu_spm_data, spm_uas_data, spm_uas_mean, spm_mean = setup_boxplot_data_monthly(
-    r'D:\MSU\dissertation\SPM_Multi-spectral\data\sites_SPM.xlsx', 'Date', '%m-%Y'
+    r'G:\Other computers\My Laptop\dissertation\SPM_Multi-spectral\data\sites_SPM.xlsx', 'Date', '%m-%Y'
 )
 print(insitu_spm_data)
 print(spm_uas_data)
 print(spm_uas_mean)
 print(spm_mean)
-def add_box_plots(plt, axes, insitu_spm_values, spm_uas_mean, spm_mean, format):
-    plt.figure(figsize=(10, 5))
-
+def add_box_plots(axes, insitu_spm_values, spm_uas_mean, spm_mean):
     axes.plot(np.arange(len(spm_uas_mean)) + 1, spm_uas_mean, marker='o',
               color='#bf5700', label='UAS')
     axes.plot(np.arange(len(spm_mean)) + 1, spm_mean, marker='o',
               color='#2177e2', label='In situ')
-    # plt.legend()
-    axes.legend(loc='upper right')
+
+    axes.legend(loc='upper right', bbox_to_anchor=(0.5, 0.9, 0.6, 0.))
     boxprops = dict(color="#2177e2", linewidth=1.5)
     medianprops = dict(color="#2177e2", linewidth=1.5)
     flierprops = dict(marker='o', markerfacecolor='none', markersize=7,
@@ -222,6 +221,7 @@ def add_box_plots(plt, axes, insitu_spm_values, spm_uas_mean, spm_mean, format):
         whiskerprops=dict(color="#2177e2"),
         flierprops=flierprops
     )
+
     boxprops2 = dict(color='#bf5700', linewidth=1.5)
     medianprops2 = dict(color='#bf5700', linewidth=1.5)
     flierprops2 = dict(marker='o', markerfacecolor='none', markersize=7,
@@ -230,7 +230,7 @@ def add_box_plots(plt, axes, insitu_spm_values, spm_uas_mean, spm_mean, format):
     # pixel_values = txt_file_to_pixel_values()
     pixel_values = stats
     pixel_values_value = pixel_values.values()
-    # plt.boxplot(pixel_values_value, labels=labels,  boxprops=boxprops2, medianprops=medianprops2,
+    # plt.boxplot(pixel_values_value, labels=labels, boxprops=boxprops2, medianprops=medianprops2,
     #             capprops=dict(color="red"),
     #             whiskerprops=dict(color="red") )
     axes.bxp(
@@ -240,6 +240,8 @@ def add_box_plots(plt, axes, insitu_spm_values, spm_uas_mean, spm_mean, format):
         whiskerprops=dict(color="#bf5700"),
         flierprops=flierprops2
     )
+    for label in axes.get_xticklabels() + axes.get_yticklabels():
+        label.set_fontsize(11)
     # axes.set_title('Default')
     # y_axis = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     # y_values = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
@@ -251,11 +253,11 @@ if __name__ == '__main__':
     insitu_spm_values, uas_spm_values, spm_uas_mean, spm_mean = setup_boxplot_data_daily()
     # print (uas_spm_values)'
     fig, axes = plt.subplots(1, 1)
-    add_box_plots(plt, axes, insitu_spm_values.values(), spm_uas_mean, spm_mean, format='%Y-%m')
+    add_box_plots(axes, insitu_spm_values.values(), spm_uas_mean, spm_mean)
     axes.grid(True)
     # plt.xlabel('Sampling Periods')
     axes.set(xlabel="Sampling Periods", ylabel='SPM (mg/L)')
     plt.tight_layout()
 
     # plt.show()
-    save_plot(fig, 'poster')
+    save_plot(plt, 'poster_wide', None)

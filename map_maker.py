@@ -7,7 +7,7 @@ print (cmocean.cm.cmapnames)
 cmap = cmocean.cm.topo
 fig, axes = plt.subplots(1, 2, figsize=(8,4))
 A = np.random.randint(-50, 201, (10,10))
-salinity = 'D:/MSU/RA/acidification/acidification/salinity/salinity.tif'
+salinity = 'C:/Users/andex/OneDrive/Documents/MSU/RA/acidification/acidification/salinity/salinity.tif'
 mappable = axes[0].pcolormesh(A, vmin=-200, vmax=200, cmap=cmap)
 axes[0].set_title('No values<-50, but still\nshow possibility in colorbar')
 fig.colorbar(mappable, ax=axes[0])

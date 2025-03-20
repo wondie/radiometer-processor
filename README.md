@@ -1,4 +1,13 @@
-Requires Python 3.9 via Anaconda
+
+
+Requires Python 3.9 via Anaconda, you can install the latest env and create an Python 3.9 env. 
+
+conda create -n gdal_cf python=3.10
+conda activate gdal_cf
+conda config --env --add channels conda-forge
+
+conda install gdal
+
 GEOS 3.3 bin and dev or later. Install using OSGeo4W for Windows.
 
 installation
@@ -9,7 +18,7 @@ conda install -c conda-forge parallel
 
 conda install -c conda-forge cmocean
 
-conda install -c intel scikit-learn
+conda install anaconda::scikit-learn
 
 conda install -c conda-forge astropy
 
@@ -17,22 +26,22 @@ conda install -c conda-forge georaster
 
 conda install -c conda-forge cartopy
 
-Inside  Anaconda Command Prompt  
-pip install mgsub
-
-pip install matplotlib==3.5.2
-
-pip install pytexit
-
-pip install sympy
-
-pip install pytorch
-# Go to anaconda shell:
-cd .\libs\pytorch-minimize\
-pip install -e .
+conda install anaconda::pandas
 
 
-pip install -r requirements.txt
+conda install conda-forge::matplotlib
+
+conda install anaconda::natsort
+
+conda install anaconda::openpyxl
+
+conda install conda-forge::xlsxwriter
+conda install conda-forge::r-mgsub
+
+conda install conda-forge::pytexit
+
+conda install pytorch torchvision torchaudio pytorch-cuda=12.4 -c pytorch -c nvidia
+
 
 
 To create portable exe file:
