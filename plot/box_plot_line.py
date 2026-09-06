@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 from plot import save_plot
 # TODO change stats label date to monthly to change the plot x values to monthly
-TIME_SERIES = r'D:\MSU\dissertation\SPM_Multi-spectral\data\discharge\monthly\sites_SPM_monthly.xlsx'
+TIME_SERIES = r'G:\Other computers\My Laptop\dissertation\SPM_Multi-spectral\data\sites_SPM.xlsx'
 MONTHS = ['2018_03', '2018_05', '2018_06', '2018_07', '2018_12', '2019_06',
           '2019_07', '2021_07']
 stats = {'2018-03': {'label': '03-01-2018', 'mean': 48.49413536058343,
@@ -43,10 +43,10 @@ stats = {'2018-03': {'label': '03-01-2018', 'mean': 48.49413536058343,
                      'cihi': 34.929714, 'whishi': 68.45436, 'whislo': 18.75,
                      'fliers': [], 'q1': 28.669275, 'med': 34.9295,
                      'q3': 44.58331},
-         '2021-07': {'label': '07-01-2021', 'mean': 43.84053343948744,
-                     'iqr': 19.364843, 'cilo': 43.622818, 'cihi': 43.622818,
-                     'whishi': 70.75, 'whislo': 18.75, 'fliers': [],
-                     'q1': 33.70563, 'med': 43.62234, 'q3': 53.070473}
+         # '2021-07': {'label': '07-01-2021', 'mean': 43.84053343948744,
+         #             'iqr': 19.364843, 'cilo': 43.622818, 'cihi': 43.622818,
+         #             'whishi': 70.75, 'whislo': 18.75, 'fliers': [],
+         #             'q1': 33.70563, 'med': 43.62234, 'q3': 53.070473}
          }
 
 
@@ -191,16 +191,10 @@ def setup_boxplot_data_monthly(path=None, date='Date', month_format="%Y-%m", con
 
     return insitu_spm_data, uas_spm_data, uas_spm_mean, insitu_spm_mean
 
-insitu_spm_data, spm_uas_data, spm_uas_mean, spm_mean = setup_boxplot_data_monthly(
-    r'D:\MSU\dissertation\SPM_Multi-spectral\data\sites_SPM.xlsx', 'Date', '%m-%Y'
-)
-print(insitu_spm_data)
-print(spm_uas_data)
-print(spm_uas_mean)
-print(spm_mean)
-def add_box_plots(plt, axes, insitu_spm_values, spm_uas_mean, spm_mean, format):
-    plt.figure(figsize=(10, 5))
-
+def add_box_plots(plt, axes, insitu_spm_values, uas_spm_values, spm_uas_mean, spm_mean, format):
+    insitu_spm_values = list(insitu_spm_values)
+    uas_spm_values = list(uas_spm_values)
+    positions = np.arange(len(insitu_spm_values)) + 1
     axes.plot(np.arange(len(spm_uas_mean)) + 1, spm_uas_mean, marker='o',
               color='#bf5700', label='UAS')
     axes.plot(np.arange(len(spm_mean)) + 1, spm_mean, marker='o',
@@ -216,7 +210,7 @@ def add_box_plots(plt, axes, insitu_spm_values, spm_uas_mean, spm_mean, format):
     #     temp_insitu_spm_values = OrderedDict()
     #     for f
     axes.boxplot(
-        insitu_spm_values, labels=['', '', '', '', '', '', '', ''],
+        insitu_spm_values, positions=positions - 0.15, widths=0.25,
         boxprops=boxprops, medianprops=medianprops,
         capprops=dict(color="#2177e2"),
         whiskerprops=dict(color="#2177e2"),
@@ -228,18 +222,19 @@ def add_box_plots(plt, axes, insitu_spm_values, spm_uas_mean, spm_mean, format):
                        linestyle='none', markeredgecolor='#bf5700')
     # raster_arrays = raster_to_arrays()
     # pixel_values = txt_file_to_pixel_values()
-    pixel_values = stats
-    pixel_values_value = pixel_values.values()
+    pixel_values_value = uas_spm_values
     # plt.boxplot(pixel_values_value, labels=labels,  boxprops=boxprops2, medianprops=medianprops2,
     #             capprops=dict(color="red"),
     #             whiskerprops=dict(color="red") )
-    axes.bxp(
-        pixel_values_value, widths=(0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6),
+    axes.boxplot(
+        pixel_values_value, positions=positions + 0.15, widths=0.25,
         boxprops=boxprops2, medianprops=medianprops2,
         capprops=dict(color="#bf5700"),
         whiskerprops=dict(color="#bf5700"),
         flierprops=flierprops2
     )
+    axes.set_xticks(positions)
+    axes.set_xticklabels([''] * len(positions))
     # axes.set_title('Default')
     # y_axis = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     # y_values = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
@@ -248,14 +243,91 @@ def add_box_plots(plt, axes, insitu_spm_values, spm_uas_mean, spm_mean, format):
 
 
 if __name__ == '__main__':
-    insitu_spm_values, uas_spm_values, spm_uas_mean, spm_mean = setup_boxplot_data_daily()
+    # Use monthly grouping (mm-YYYY format)
+    insitu_spm_data, uas_spm_data, spm_uas_mean, spm_mean = setup_boxplot_data_daily(format='%m-%Y')
+    
+    # Filter out 2021 data
+    filtered_insitu = OrderedDict()
+    filtered_uas = OrderedDict()
+    filtered_insitu_mean = []
+    filtered_uas_mean = []
+    
+    for (period, insitu_vals), (_, uas_vals), insitu_m, uas_m in zip(
+        insitu_spm_data.items(), uas_spm_data.items(), spm_mean, spm_uas_mean):
+        if not period.endswith('-2021'):
+            filtered_insitu[period] = insitu_vals
+            filtered_uas[period] = uas_vals
+            filtered_insitu_mean.append(insitu_m)
+            filtered_uas_mean.append(uas_m)
+    
+    insitu_spm_data = filtered_insitu
+    uas_spm_data = filtered_uas
+    spm_mean = filtered_insitu_mean
+    spm_uas_mean = filtered_uas_mean
+    
     # print (uas_spm_values)'
-    fig, axes = plt.subplots(1, 1)
-    add_box_plots(plt, axes, insitu_spm_values.values(), spm_uas_mean, spm_mean, format='%Y-%m')
-    axes.grid(True)
-    # plt.xlabel('Sampling Periods')
+    fig, axes = plt.subplots(1, 1, figsize=(10, 5))
+    
+    insitu_spm_values = list(insitu_spm_data.values())
+    uas_spm_values = list(uas_spm_data.values())
+    positions = np.arange(len(insitu_spm_values)) + 1
+    
+    print(f"Number of periods: {len(positions)}")
+    print(f"Insitu values: {len(insitu_spm_values)}")
+    print(f"UAS values: {len(uas_spm_values)}")
+    
+    # Check data content in detail
+    print("\n" + "="*60)
+    print("DATA CHECK")
+    print("="*60)
+    for i, (period_name, insitu, uas) in enumerate(zip(insitu_spm_data.keys(), insitu_spm_values, uas_spm_values)):
+        print(f"\nPeriod {i+1} ({period_name}):")
+        print(f"  Insitu: {len(insitu)} values -> {insitu}")
+        print(f"  UAS:    {len(uas)} values -> {uas}")
+        if len(insitu) <= 1:
+            print(f"  WARNING: Insitu has {len(insitu)} value(s) - boxplot needs multiple values!")
+        if len(uas) <= 1:
+            print(f"  WARNING: UAS has {len(uas)} value(s) - boxplot needs multiple values!")
+    print("="*60 + "\n")
+    
+    # Filter out empty lists
+    insitu_spm_values_filtered = [v if len(v) > 0 else [0] for v in insitu_spm_values]
+    uas_spm_values_filtered = [v if len(v) > 0 else [0] for v in uas_spm_values]
+    
+    # Plot boxplot ONLY for Insitu SPM (centered at positions)
+    boxprops = dict(color="#2177e2", linewidth=2.5, facecolor='lightblue', alpha=0.5)
+    medianprops = dict(color="darkblue", linewidth=3.0)
+    flierprops = dict(marker='o', markerfacecolor='none', markersize=7,
+                      linestyle='none', markeredgecolor='#2177e2')
+    bp1 = axes.boxplot(
+        insitu_spm_values_filtered, positions=positions, widths=0.5,
+        patch_artist=True,
+        boxprops=boxprops, medianprops=medianprops,
+        capprops=dict(color="#2177e2", linewidth=2.5),
+        whiskerprops=dict(color="#2177e2", linewidth=2.5),
+        flierprops=flierprops,
+        zorder=1
+    )
+    
+    # Plot line graphs for mean values ON TOP
+    axes.plot(positions, spm_uas_mean, marker='o', color='#bf5700', label='UAS', 
+              linewidth=1.5, markersize=6, zorder=2)
+    axes.plot(positions, spm_mean, marker='o', color='#2177e2', label='In situ', 
+              linewidth=1.5, markersize=6, zorder=2)
+    axes.legend(loc='upper right')
+    
+    # Set x-axis labels with sampling periods
+    axes.set_xticks(positions)
+    axes.set_xticklabels(list(insitu_spm_data.keys()), rotation=45, ha='right')
+    
+    axes.grid(True, alpha=0.3, zorder=0)
     axes.set(xlabel="Sampling Periods", ylabel='SPM (mg/L)')
     plt.tight_layout()
 
-    # plt.show()
-    save_plot(fig, 'poster')
+    # Save with specific filename
+    output_path = r'G:\Other computers\My Laptop\codes\radiometer_processor\data\output\boxplot_insitu_uas.png'
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    print(f"\nPlot saved to: {output_path}")
+    
+    plt.show()
+    plt.close()

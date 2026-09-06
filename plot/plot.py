@@ -15,7 +15,7 @@ import georaster
 import pandas as pd
 from cartopy.io.shapereader import Reader
 # plt.rcParams['text.usetex'] = True
-
+ROOT = r'G:\Other computers\My Laptop\codes\radiometer_processor'
 plt.rcParams["figure.autolayout"] = True
 extent = (-93.99, -80.3, 15.507, 31.955)
 
@@ -108,8 +108,9 @@ def save_plot(plt, size, file_name=None):
         # print("Failed")
         if file_name is None:
             file_name = 'boxplot'
-        plt.savefig(r'D:\MSU\codes\radiometer_processor\data\{}.png'.format(file_name), dpi = style['dpi'])
-        plt.show()
+        plt.savefig(r'{}\data\output\{}.png'.format(ROOT, file_name), dpi = style['dpi'])
+        # plt.show()
+        plt.close()
 def create_scatter_plot(actual, estimated, validation, model, training_y, training_x, r2, equation_latex, size='paper'):
 
     style = plot_size(size)
@@ -204,13 +205,13 @@ def read_xy_data(x_path, y_path):
     try:
         x_df = pd.read_excel(x_path)
     except Exception as ex:
-        x_df = pd.read_csv(x_path, 'rb', encoding='utf8')
+        x_df = pd.read_csv(x_path, encoding='utf8')
     x_df = x_df.reset_index()  # make sure indexes pair with number of rows
     # read data
     try:
         y_df = pd.read_excel(y_path)
     except Exception as ex:
-        y_df = pd.read_csv(x_path, 'rb', encoding='utf8')
+        y_df = pd.read_csv(y_path, encoding='utf8')
     y_df = y_df.where((pd.notnull(y_df)), None)
     y_df = y_df.reset_index()  # make sure indexes pair with number of rows
     # organize by date and average SPM data - x data
@@ -222,7 +223,7 @@ def read_data(data_path):
     try:
         df = pd.read_excel(data_path)
     except Exception as ex:
-        df = pd.read_csv(data_path, 'rb', encoding='utf8')
+        df = pd.read_csv(data_path, encoding='utf8')
     df = df.reset_index()  # make sure indexes pair with number of rows
     df = df.where((pd.notnull(df)), None)
 

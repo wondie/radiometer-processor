@@ -171,13 +171,13 @@ def plot_data(spm_path, discharge_path, insitu_spm_field, uas_spm_field,
 
     spm_indexes = [spm_pos.get_loc(d) for d in insitu_spm_data.keys()]
     print(spm_indexes)
-    # ax.boxplot(
-    #     list(insitu_spm_data.values()), positions=spm_indexes,
-    #     boxprops=boxprops, medianprops=medianprops,
-    #     capprops=dict(color="#2177e2"),
-    #     whiskerprops=dict(color="#2177e2"),
-    #     flierprops=flierprops
-    # )
+    ax.boxplot(
+        list(insitu_spm_data.values()), positions=spm_indexes,
+        boxprops=boxprops, medianprops=medianprops,
+        capprops=dict(color="#2177e2"),
+        whiskerprops=dict(color="#2177e2"),
+        flierprops=flierprops
+    )
     # seaborn.boxplot(x=list(insitu_spm_data.keys()), y=list(insitu_spm_data.values()))
     # ax.set_xticklabels(list(discharge_daily_values_cont[0].keys()), rotation=45 )
 
@@ -187,8 +187,8 @@ def plot_data(spm_path, discharge_path, insitu_spm_field, uas_spm_field,
     ax.legend(handles=[p, p0, p1, p2, p3, p4], loc=4)
     save_plot(plt, 'poster', 'SPM and Discharge')
 
-SPM_path = r'D:\MSU\dissertation\SPM_Multi-spectral\data\sites_SPM.xlsx'
-discharge_path = r'D:\MSU\dissertation\SPM_Multi-spectral\data\discharge\daily\discharge_daily_combined.xlsx'
+SPM_path = r'G:\Other computers\My Laptop\dissertation\SPM_Multi-spectral\data\sites_SPM.xlsx'
+discharge_path = r'G:\Other computers\My Laptop\dissertation\SPM_Multi-spectral\data\discharge\daily\discharge_daily_combined.xlsx'
 
 plot_data(SPM_path, discharge_path, 'Insitu SPM', 'UAS SPM', 'Date', 'Jourdan River', 'Wolf River','Pearl River','Bonnet Carre Spillway', 'SPM (mg/L)', 'Gauge Height','Discharge (cpfs)','Date', 4)
 

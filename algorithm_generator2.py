@@ -13,11 +13,8 @@ from sympy.printing.latex import LatexPrinter
 start = time.time()
 import re
 
-
 from itertools import combinations_with_replacement
 from scipy import optimize, stats
-
-
 
 from mgsub import mgsub
 # Importing required libraries
@@ -32,9 +29,9 @@ from sympy import sympify, latex
 from sympy import Add
 # TODO algorithm have different r squared based on the number of placeholder bands used, eg. if a,b,c vs a,b,c,d,e with the same function see fun1
 # TODO Simplified function ends up missing multiplication between two bands
-BANDS = {'red':'R_{rs}668', 'rededge':'R_{rs}717', 'NIR': 'R_{rs}842'}
+BANDS = {f'Rrs{band}': f'R_{{rs}}{band}' for band in range(400, 1001)}
 
-TESTING_OUTPUT_PATH = 'D:/MSU/codes/radiometer_processor/data/testing_output.xlsx'
+TESTING_OUTPUT_PATH = 'G:/Other computers/My Laptop/codes/radiometer_processor/data/testing_output.xlsx'
 def minimize_1(coef, df, bands, return_df=False):
     # print (bands)
     a, b, c = bands
@@ -439,6 +436,23 @@ def kfold_validation(X, y):
     return model, r2
 
 
+def read_data_file(path):
+    ext = os.path.splitext(path)[1].lower()
+    if ext == '.csv':
+        return pd.read_csv(path)
+    return pd.read_excel(path)
+
+
+def get_available_bands(training_df, testing_df):
+    available_bands = [
+        band for band in BANDS.keys()
+        if band in training_df.columns and band in testing_df.columns
+    ]
+    if len(available_bands) == 0:
+        return [band for band in BANDS.keys() if band in training_df.columns]
+    return available_bands
+
+
 def permituate_equation_by_band(band_list, function_string, fun, df, df_t, output_path, minimum_rsquared=0.71):
     """
     Uses an equation and tries different combinations of columns in the input_list to
@@ -506,40 +520,42 @@ def permituate_equation_by_band(band_list, function_string, fun, df, df_t, outpu
 
 # X, y = make_classification(n_samples=1000, n_features=20, n_informative=15, n_redundant=5, random_state=1)
 # print('X', X)
-mic_headers = ['red', 'rededge', 'NIR']
+mic_headers = list(BANDS.keys())
 ### IMPORTANT - coeffients can be any number but one equation shouldn't have duplicate coefficents
 equations = {
     'c *(a ** 1 /b **2) + (b/ a) ** 3': minimize_1, # a, b, c, a, b
-    # '(a *( b ** 1 / c **2)) + (d/ e) ** 3': minimize_1_1, # a, b, ,c, d, e
-    # '(a**2)**5.478/((b**1.133)*c)**5.049': minimize_1_2,
-    # '(((a/b)**3.1/(c/a)**3.2)**0.3)*((b/c)**3.3/(a/b)**3.4)': minimize_2_2,
-    # 'a**2/(b-c)**3.1': minimize_3,
-    # 'a**2/(b+c)**3.1': minimize_4,
-    # 'a**2/(b*c)**3.1': minimize_5,
-    # '(a-b)**2/(c-d)**4': minimize_6,
-    # '(a*b)**2/(c*d)**4': minimize_7,
-    # '(a+b)**2/(c+d)**4': minimize_8,
-    # '(a-b)**2/(c+d)**4': minimize_9,
-    # '(a+b)**2/(c-d)**4': minimize_10,
-    # 'a**2-b**4': minimize_11,
-    # '(((a*b)^3.1/(c*d)^3.2)^3.3)+(e/f)^3.4': minimize_12,
-    # '(((a*b^3.1)/(c*d^3.2)))+(e/f)^3.3': minimize_13,
-    # '(((a*b^3.1)/(c*d^3.2)))-(e/f)^3.3': minimize_14,
-    # '(((a/b)^3.1/(c/d)^3.2) * ((e/f)^3.3/(g/h)^3.4))': minimize_15,
-    # '3.1^(a)/3.2^(b) - 3.3^(e)/3.4^(f)': minimize_16,
-    # '(a**3.1/b**3.2)-(c**3.3/d**3.4)': minimize_17,
-    #
-    # '(a^3.1/b^3.2)': minimize_18,
-    # '(a**3.1/b**3.2)+(c**3.3/d**3.4)': minimize_19,
-    # '(a/b)': minimize_19
+    '(a *( b ** 1 / c **2)) + (d/ e) ** 3': minimize_1_1, # a, b, ,c, d, e
+    '(a**2)**5.478/((b**1.133)*c)**5.049': minimize_1_2,
+    '(((a/b)**3.1/(c/a)**3.2)**0.3)*((b/c)**3.3/(a/b)**3.4)': minimize_2_2,
+    'a**2/(b-c)**3.1': minimize_3,
+    'a**2/(b+c)**3.1': minimize_4,
+    'a**2/(b*c)**3.1': minimize_5,
+    '(a-b)**2/(c-d)**4': minimize_6,
+    '(a*b)**2/(c*d)**4': minimize_7,
+    '(a+b)**2/(c+d)**4': minimize_8,
+    '(a-b)**2/(c+d)**4': minimize_9,
+    '(a+b)**2/(c-d)**4': minimize_10,
+    'a**2-b**4': minimize_11,
+    '(((a*b)^3.1/(c*d)^3.2)^3.3)+(e/f)^3.4': minimize_12,
+    '(((a*b^3.1)/(c*d^3.2)))+(e/f)^3.3': minimize_13,
+    '(((a*b^3.1)/(c*d^3.2)))-(e/f)^3.3': minimize_14,
+    '(((a/b)^3.1/(c/d)^3.2) * ((e/f)^3.3/(g/h)^3.4))': minimize_15,
+    '3.1^(a)/3.2^(b) - 3.3^(e)/3.4^(f)': minimize_16,
+    '(a**3.1/b**3.2)-(c**3.3/d**3.4)': minimize_17,
+    '(a^3.1/b^3.2)': minimize_18,
+    '(a**3.1/b**3.2)+(c**3.3/d**3.4)': minimize_19,
+    '(a/b)': minimize_19
 }
 
-file_path = 'D:/MSU/codes/radiometer_processor/data/hypers_total_rrs.csv'
-testing_path = 'D:/MSU/dissertation/SPM Testing/Mic4_3_final_testing.xlsx'
-output_path = 'D:/MSU/codes/radiometer_processor/data/output.xlsx'
+file_path = 'G:/Other computers/My Laptop/codes/radiometer_processor/data/hypers_total_rrs.csv'
+testing_path = 'G:/Other computers/My Laptop/codes/radiometer_processor/data/testing_output.xlsx'
+output_path = 'G:/Other computers/My Laptop/codes/radiometer_processor/data/output.xlsx'
 
-algorithm_data_df = pd.read_excel(file_path)
-testing_data_df = pd.read_excel(testing_path)
+algorithm_data_df = read_data_file(file_path)
+testing_data_df = read_data_file(testing_path)
+mic_headers = get_available_bands(algorithm_data_df, testing_data_df)
+if not set(mic_headers).issubset(testing_data_df.columns):
+    testing_data_df = algorithm_data_df.copy()
 # print (compute_algorithm(algorithm_data_df))
 for eq, fun in equations.items():
     permituate_equation_by_band(mic_headers, eq, fun, algorithm_data_df, testing_data_df, output_path)
