@@ -10,43 +10,42 @@ from plot import save_plot
 # TODO change stats label date to monthly to change the plot x values to monthly
 TIME_SERIES = r'G:\Other computers\My Laptop\dissertation\SPM_Hyperspectral\data\sites_SPM_hyper.xlsx'
 MONTHS = ['2018_03', '2018_05', '2018_06', '2018_07', '2018_12', '2019_06',
-          '2019_07', '2021_07']
-stats = {'2018-03': {'label': '03-01-2018', 'mean': 48.49413536058343,
-                     'iqr': 17.808972000000004, 'cilo': 47.60989,
-                     'cihi': 47.60989, 'whishi': 70.75, 'whislo': 18.75,
-                     'fliers': [], 'q1': 39.423992, 'med': 47.609985,
-                     'q3': 57.232964},
-         '2018-05': {'label': '05-01-2018', 'mean': 50.66261584940906,
-                     'iqr': 17.96060175000001, 'cilo': 50.934883,
-                     'cihi': 50.934883, 'whishi': 70.75, 'whislo': 18.75,
-                     'fliers': [], 'q1': 42.03115124999999, 'med': 50.9356,
-                     'q3': 59.991753},
-         '2018-06': {'label': '06-01-2018', 'mean': 53.106575937526294,
-                     'iqr': 15.364933, 'cilo': 53.151974, 'cihi': 53.151974,
-                     'whishi': 70.74999, 'whislo': 22.800732, 'fliers': [],
-                     'q1': 45.848103, 'med': 53.15095, 'q3': 61.213036},
-         '2018-07': {'label': '07-01-2018', 'mean': 48.4147312334088,
-                     'iqr': 17.568292, 'cilo': 47.791264, 'cihi': 47.791264,
-                     'whishi': 70.75, 'whislo': 18.750008, 'fliers': [],
-                     'q1': 39.791958, 'med': 47.790653, 'q3': 57.36025},
-         '2018-12': {'label': '12-01-2018', 'mean': 54.76202082100937,
-                     'iqr': 15.137205999999999, 'cilo': 54.438995,
-                     'cihi': 54.438995, 'whishi': 70.75, 'whislo': 24.823877,
-                     'fliers': [], 'q1': 47.52966, 'med': 54.439846,
-                     'q3': 62.666866},
-         '2019-06': {'label': '06-01-2019', 'mean': 39.861843893526085,
-                     'iqr': 17.317583, 'cilo': 37.521755, 'cihi': 37.521755,
-                     'whishi': 70.75, 'whislo': 18.75, 'fliers': [],
-                     'q1': 30.319347, 'med': 37.52079, 'q3': 47.63693},
-         '2019-07': {'label': '07-01-2019', 'mean': 37.61548303090227,
-                     'iqr': 15.914034999999998, 'cilo': 34.929714,
-                     'cihi': 34.929714, 'whishi': 68.45436, 'whislo': 18.75,
-                     'fliers': [], 'q1': 28.669275, 'med': 34.9295,
-                     'q3': 44.58331},
-         # '2021-07': {'label': '07-01-2021', 'mean': 43.84053343948744,
-         #             'iqr': 19.364843, 'cilo': 43.622818, 'cihi': 43.622818,
-         #             'whishi': 70.75, 'whislo': 18.75, 'fliers': [],
-         #             'q1': 33.70563, 'med': 43.62234, 'q3': 53.070473}
+          '2019_07']
+stats = {'2018-03': {'label': '03-01-2018', 'mean': 48.92021942138672,
+                     'iqr': 16.231426239013672, 'cilo': 46.18420247191051,
+                     'cihi': 46.18786021119496, 'whishi': 79.80335235595703, 'whislo': 17.424707412719727,
+                     'fliers': [], 'q1': 39.22479248046875, 'med': 46.186031341552734,
+                     'q3': 55.45621871948242},
+         '2018-05': {'label': '05-01-2018', 'mean': 47.81859588623047,
+                     'iqr': 17.5078125, 'cilo': 43.98210815210446,
+                     'cihi': 43.98552032689945, 'whishi': 80.37709045410156, 'whislo': 17.356876373291016,
+                     'fliers': [], 'q1': 36.60756301879883, 'med': 43.98381423950195,
+                     'q3': 54.11537551879883},
+         '2018-06': {'label': '06-01-2018', 'mean': 47.594200134277344,
+                     'iqr': 16.250728607177734, 'cilo': 42.06770646397376,
+                     'cihi': 42.07066023524499, 'whishi': 76.36460876464844, 'whislo': 16.938583374023438,
+                     'fliers': [], 'q1': 35.737789154052734, 'med': 42.069183349609375,
+                     'q3': 51.98851776123047},
+         '2018-07': {'label': '07-01-2018', 'mean': 67.10711669921875,
+                     'iqr': 28.97795867919922, 'cilo': 60.02605834751214,
+                     'cihi': 60.03306946010505, 'whishi': 119.656005859375, 'whislo': 16.895000457763672,
+                     'fliers': [], 'q1': 47.21111297607422, 'med': 60.029563903808594,
+                     'q3': 76.18907165527344},
+         '2018-12': {'label': '12-01-2018', 'mean': 86.19490051269531,
+                     'iqr': 44.246673583984375, 'cilo': 71.68429910347876,
+                     'cihi': 71.69581259085717, 'whishi': 164.64617919921875, 'whislo': 16.895000457763672,
+                     'fliers': [], 'q1': 54.02949523925781, 'med': 71.69005584716797,
+                     'q3': 98.27616882324219},
+         '2019-06': {'label': '06-01-2019', 'mean': 45.17489242553711,
+                     'iqr': 15.114555358886719, 'cilo': 40.98647488248668,
+                     'cihi': 40.98969088899769, 'whishi': 72.73553466796875, 'whislo': 17.165565490722656,
+                     'fliers': [], 'q1': 34.94915008544922, 'med': 40.98808288574219,
+                     'q3': 50.06370544433594},
+         '2019-07': {'label': '07-01-2019', 'mean': 38.72906494140625,
+                     'iqr': 11.808418273925781, 'cilo': 35.71976508579002,
+                     'cihi': 35.72148857631935, 'whishi': 60.74414825439453, 'whislo': 17.133949279785156,
+                     'fliers': [], 'q1': 31.223102569580078, 'med': 35.72062683105469,
+                     'q3': 43.03152084350586}
          }
 
 
@@ -295,39 +294,46 @@ if __name__ == '__main__':
     uas_spm_values_filtered = [v if len(v) > 0 else [0] for v in uas_spm_values]
     
     # Plot boxplot ONLY for Insitu SPM (centered at positions)
-    boxprops = dict(color="#2177e2", linewidth=2.5, facecolor='lightblue', alpha=0.5)
-    medianprops = dict(color="darkblue", linewidth=3.0)
+    # Styled to match Chapter 1's boxplot_line.svg reference: peachpuff box,
+    # brown outline/whiskers, blue "UAS" / green "In situ" mean lines,
+    # horizontal-only gridlines, non-rotated period labels.
+    boxprops = dict(color="#915f0e", linewidth=1.5, facecolor='#ffdab9', alpha=0.5)
+    medianprops = dict(color="#915f0e", linewidth=1.5)
     flierprops = dict(marker='o', markerfacecolor='none', markersize=7,
-                      linestyle='none', markeredgecolor='#2177e2')
+                      linestyle='none', markeredgecolor='#915f0e')
     bp1 = axes.boxplot(
         insitu_spm_values_filtered, positions=positions, widths=0.5,
         patch_artist=True,
         boxprops=boxprops, medianprops=medianprops,
-        capprops=dict(color="#2177e2", linewidth=2.5),
-        whiskerprops=dict(color="#2177e2", linewidth=2.5),
+        capprops=dict(color="#915f0e", linewidth=1.5),
+        whiskerprops=dict(color="#915f0e", linewidth=1.5),
         flierprops=flierprops,
         zorder=1
     )
-    
+
     # Plot line graphs for mean values ON TOP
-    axes.plot(positions, spm_uas_mean, marker='o', color='#bf5700', label='UAS', 
+    axes.plot(positions, spm_uas_mean, marker='o', color='#2c42b3', label='UAS',
               linewidth=1.5, markersize=6, zorder=2)
-    axes.plot(positions, spm_mean, marker='o', color='#2177e2', label='In situ', 
+    axes.plot(positions, spm_mean, marker='o', color='#2cb330', label='In situ',
               linewidth=1.5, markersize=6, zorder=2)
     axes.legend(loc='upper right')
-    
-    # Set x-axis labels with sampling periods
+
+    # Set x-axis labels with sampling periods (horizontal, not rotated)
     axes.set_xticks(positions)
-    axes.set_xticklabels(list(insitu_spm_data.keys()), rotation=45, ha='right')
-    
-    axes.grid(True, alpha=0.3, zorder=0)
+    axes.set_xticklabels(list(insitu_spm_data.keys()))
+
+    axes.grid(axis='y', color='#b0b0b0', linewidth=0.8, zorder=0)
     axes.set(xlabel="Sampling Periods", ylabel='SPM (mg/L)')
     plt.tight_layout()
 
-    # Save with specific filename
-    output_path = r'G:\Other computers\My Laptop\codes\radiometer_processor\data\output\boxplot_insitu_uas_hyper.png'
+    # Save PNG for quick preview and SVG for paper/publication use (vector,
+    # matching the reference image's own format).
+    output_path = r'G:\Other computers\My Laptop\codes\radiometer_processor\data\output\boxplot_insitu_uas.png'
+    svg_output_path = r'G:\Other computers\My Laptop\codes\radiometer_processor\data\output\boxplot_insitu_uas.svg'
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.savefig(svg_output_path, bbox_inches='tight')
     print(f"\nPlot saved to: {output_path}")
+    print(f"Paper/vector version saved to: {svg_output_path}")
     
     plt.show()
     plt.close()

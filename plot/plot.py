@@ -1,3 +1,4 @@
+import functools
 import warnings
 from collections import OrderedDict
 from datetime import datetime
@@ -101,14 +102,14 @@ matter = cmocean.cm.matter
 dense = cmocean.cm.dense
 speed = cmocean.cm.speed
 
-def save_plot(plt, size, file_name=None):
+def save_plot(plt, size, file_name=None, fig=None):
     style = plot_size(size)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        # print("Failed")
+
         if file_name is None:
             file_name = 'boxplot'
-        plt.savefig(r'{}\data\output\{}.png'.format(ROOT, file_name), dpi = style['dpi'])
+        plt.savefig(r'{}\data\output\{}.svg'.format(ROOT, file_name), dpi = style['dpi'])
         # plt.show()
         plt.close()
 def create_scatter_plot(actual, estimated, validation, model, training_y, training_x, r2, equation_latex, size='paper'):
@@ -200,7 +201,12 @@ def add_algorithm_plot(training_y, training_x, model, axis, r2, equation_latex, 
               fontsize=style['plot_font_size'], zorder=34)
 
 
+@functools.lru_cache(maxsize=None)
 def read_xy_data(x_path, y_path):
+    # Cached: callers like discharge_correlation_plot_hyper.py's transit-time
+    # loop call this with the same (x_path, y_path) hundreds of times (once per
+    # transit day per river per SPM type), and re-reading + re-parsing the same
+    # Excel files that many times dominated the script's runtime.
     # read data
     try:
         x_df = pd.read_excel(x_path)
@@ -229,8 +235,29 @@ def read_data(data_path):
 
     # read data
     return df
+_group_data_by_date_cache = {}
+
+
 def group_data_by_date(spm_df, discharge_df, spm_date_field, uas_spm_field, discharge_date_field,
                        discharge_fields, equal_dates=False, insitu_spm_field=None):
+    # Cached by DataFrame identity (valid because read_xy_data is itself cached,
+    # so repeated calls with the same source files get back the same DataFrame
+    # objects) plus the other params. Callers like discharge_correlation_plot_
+    # hyper.py's transit-time loop call this ~99 times per river/SPM-type with
+    # identical arguments (only the later date-shift step actually varies per
+    # transit day), so this avoids redoing the row-by-row iteration each time.
+    cache_key = (id(spm_df), id(discharge_df), spm_date_field, uas_spm_field,
+                discharge_date_field, tuple(discharge_fields), equal_dates, insitu_spm_field)
+    if cache_key in _group_data_by_date_cache:
+        return _group_data_by_date_cache[cache_key]
+    result = _group_data_by_date(spm_df, discharge_df, spm_date_field, uas_spm_field,
+                                 discharge_date_field, discharge_fields, equal_dates, insitu_spm_field)
+    _group_data_by_date_cache[cache_key] = result
+    return result
+
+
+def _group_data_by_date(spm_df, discharge_df, spm_date_field, uas_spm_field, discharge_date_field,
+                        discharge_fields, equal_dates=False, insitu_spm_field=None):
     y_daily_values_cont = []
     insitu_spm_values = OrderedDict()
     # if len(y_fields) > 1:

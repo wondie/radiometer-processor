@@ -29,13 +29,14 @@ Usage:
     python apply_spm_equation.py D:/HSIRrs/2018-03.tif -o E:/out/2018-03_SPM.tif
     python apply_spm_equation.py D:/HSIRrs/2018-03.tif --list-bands
     python apply_spm_equation.py D:/HSIRrs/2018-03.tif --band-map "550=203,631=229,717=253,713=252,704=246"
+    python apply_spm_equation.py D:/HSIRrs/2018-03.tif -o D:/HSIRrs/output/2018-03_SPM.tif
 
     # Folder mode: process every .tif in D:/HSIRrs, skipping ones that already
     # have output; each file gets its own optimal-drive choice unless
     # --output-dir is given. Any file's failure (e.g. no wavelength match) is
     # logged and skipped rather than stopping the rest of the batch.
     python apply_spm_equation.py D:/HSIRrs
-    python apply_spm_equation.py D:/HSIRrs --output-dir E:/HSIRrs_output
+    python apply_spm_equation.py D:/HSIRrs --output-dir D:/HSIRrs/output
     python apply_spm_equation.py D:/HSIRrs --force   # reprocess even if output exists
 
 Requires the GDAL Python bindings (`osgeo.gdal`), e.g. via OSGeo4W, conda-forge
@@ -520,6 +521,8 @@ _HSI_FILENAME_PATTERNS = [re.compile(p, re.IGNORECASE) for p in (
     r"^Box\d+_\d+_FL\d+$",
     r"^\d+[A-Z]?_FL\d+$",
     r"^F\d+_FL\d+$",
+    r".*_FL\d+$",                      # generic fallback: anything ending in _FL<number>
+    r"^Flight_?\d+[a-zA-Z]?_[A-Za-z]+$",  # named (non-FL-numbered) segment, e.g. Flight_12_N
 )]
 
 

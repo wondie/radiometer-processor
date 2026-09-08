@@ -17,6 +17,12 @@ Usage:
     python extract_spm_bands.py D:/HSIRrs --force
     python extract_spm_bands.py D:/HSIRrs/2018-03.tif -o D:/HSIRrs/spm_bands/2018-03_bands.tif
     python extract_spm_bands.py D:/HSIRrs/MS.x839.000.0018-data -o D:/HSI/2018_06   # folder input: -o = --output-dir
+    python extract_spm_bands.py D:/HSIRrs/MS.x839.000.0016-data -o D:/HSI/2018_03
+    python extract_spm_bands.py D:/HSIRrs/MS.x839.000.0019-data -o D:/HSI/2018_07
+    python extract_spm_bands.py D:/HSIRrs/MS.x839.000.0020-data -o D:/HSI/2018_12
+    python extract_spm_bands.py D:/HSIRrs/MS.x839.000.0028-data -o D:/HSI/2019_06
+    python extract_spm_bands.py D:/HSIRrs/MS.x839.000.0029-data -o D:/HSI/2019_07
+
 """
 
 import argparse

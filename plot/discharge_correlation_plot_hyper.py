@@ -2,23 +2,24 @@ import csv
 import os.path
 from collections import OrderedDict
 from datetime import datetime, timedelta
-
+from scipy.stats import linregress
 import numpy as np
 import matplotlib.pyplot as plt
 from itertools import chain
-
 import pandas as pd
 from plot import save_plot, read_xy_data, group_data_by_date, plot_size
 
 
 def prepare_SPM_discharge_corr_data(x_path, y_path, x_field_name, y_field_name,
-                                    x_date_field, y_date_field, residence_time=None):
+                                    x_date_field, y_date_field,
+                                    residence_time=None):
     x_df, y_df = read_xy_data(x_path, y_path)
     # print (x_date_field,
     #        x_field_name, y_date_field,
     #        [y_field_name])
-    date_objs, x_daily_values, y_daily_values_cont, insitu_spm_table = group_data_by_date(
-        x_df, y_df, x_date_field, x_field_name, y_date_field, [y_field_name])
+    date_objs, x_daily_values, y_daily_values_cont, insitu_spm_table = group_data_by_date(x_df, y_df, x_date_field,
+                                                 x_field_name, y_date_field,
+                                                 [y_field_name])
     y_daily_values = y_daily_values_cont[0]
     # create final x and y data with available dates for SPM
     # with the consideration of residence time
@@ -55,13 +56,13 @@ def assignIDs(list):
     return dict(zip(uniqueList, range(len(uniqueList))))
 
 
-def create_scatter_plot(x, y, color, x_field_name, y_field_name, transit_time):
+def create_scatter_plot(x, y, color, x_field_name, y_field_name, transt_d, cor='nan'):
     # xMap = assignIDs(x)
     # xAsInts = np.array([xMap[i] for i in x])
     x_np_arr = np.array(x)
     pearR = np.corrcoef(x, y)[1, 0]
-        # least squares from:
-        # http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.lstsq.html
+    # least squares from:
+    # http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.lstsq.html
     A = np.vstack([x, np.ones(len(x))]).T
     try:
         m, c = np.linalg.lstsq(A, np.array(y), rcond=None)[0]
@@ -76,12 +77,12 @@ def create_scatter_plot(x, y, color, x_field_name, y_field_name, transit_time):
     plt.ylabel(y_field_name)
     plt.title('Fit of {} and {}'.format(x_field_name, y_field_name))
     # plt.show()
-    # print ('{} {} {}'.format(x_field_name, y_field_name, transit_time))
-    save_plot(plt, 'poster', '{} {} {}'.format(x_field_name, y_field_name, transit_time))
+    save_plot(plt, 'poster', '{} {} {} {}'.format(x_field_name, y_field_name, transt_d, cor[0]))
 
 
 def transit_time_correlation_plot(correlation, param_type, x_label_name, y_label_name, riv):
     for k, v in list(correlation.items()):
+        # print(v)
         if len(v) > 0:
             if v[0] < 0:
                 del correlation[k]
@@ -90,13 +91,17 @@ def transit_time_correlation_plot(correlation, param_type, x_label_name, y_label
     print (correlation.values())
     x = np.array(list(correlation.keys()))
     y = list(chain.from_iterable(list(correlation.values())))
-    plt.rcParams['figure.figsize'] = [6, 3]
+    # print (y_intermid)
+    # y = [y[0] for y in y_intermid]
+    #print(x)
+    plt.rcParams['figure.figsize'] = [6, 3] # [width, height]
     fig, ax = plt.subplots()
     ax.set_xticks(list(range(0, 110, 10)))
     plt.plot(x, y)
-    plt.xlabel("{} (Days)".format(x_label_name))
-    plt.ylabel("{} (r)".format(y_label_name))
+    plt.xlabel("{} (Days)".format(x_label_name)) # "Transit time (Days)"
+    plt.ylabel("{} (r)".format(y_label_name)) # "correlation coefficient (r)"
     plt.title("Transit Time Vs Correlation, {}".format(riv))
+    #plt.show()
     plt.ylim([0, 1])
     save_plot(plt, 'poster', 'transit_time_vs_correlation {}_{}'.format(param_type, riv))
     return y
@@ -155,47 +160,89 @@ def transit_time_correlation_boxplots(correlation, param_type):
     for label in ax.get_xticklabels() + ax.get_yticklabels():
         label.set_fontweight('bold')
     plt.tight_layout(pad=2.0)
-    plt.savefig(r'G:\Other computers\My Laptop\codes\radiometer_processor\data\output\transit_time_vs_correlation_{}_boxplots.svg'.format(param_type), dpi=150, bbox_inches='tight')
+    plt.savefig(r'G:\Other computers\My Laptop\codes\radiometer_processor\data\output\transit_time_vs_correlation_{}_boxplots.png'.format(param_type), dpi=150, bbox_inches='tight')
     plt.close()
 
-# SPM_path = r'D:\MSU\dissertation\SPM_Multi-spectral\data\discharge\daily\sites_SPM_daily.xlsx'
-SPM_path = r'G:\Other computers\My Laptop\dissertation\SPM_Hyperspectral\data\discharge\daily\sites_SPM_daily.xlsx'
-# discharge_path = r'D:\MSU\dissertation\SPM_Multi-spectral\data\discharge\daily\discharge_daily_combined.xlsx'
-discharge_path = r'G:\Other computers\My Laptop\dissertation\SPM_Hyperspectral\data\discharge\daily\discharge_daily_combined.xlsx'
-# pearl_river_path = r'D:\MSU\dissertation\SPM_Multi-spectral\data\discharge\daily\Pearl.xlsx'
+
+def transit_time_correlation_boxplots_combined(insitu_correlations, uas_correlations,
+                                                river_order=('Bonnet Carre Spillway', 'Jourdan River',
+                                                             'Pearl River', 'Wolf River')):
+    """Combine the Insitu (panel A) and UAS (panel B) transit-time correlation
+    boxplots into a single two-panel figure, for the case where the two aren't
+    significantly different and don't need separate figures.
+    """
+    def clean(correlations):
+        cleaned = OrderedDict()
+        for river in river_order:
+            values = [v for v in correlations.get(river, []) if v is not None and v >= 0]
+            cleaned[river] = values
+        return cleaned
+
+    labels = [r.replace('Bonnet Carre Spillway', 'Bonnet Carre\nSpillway') for r in river_order]
+
+    fig, axes = plt.subplots(1, 2, figsize=(15, 3.5), sharey=True)
+    boxprops = dict(linewidth=1.5)
+    whiskerprops = dict(linewidth=1.5)
+    capprops = dict(linewidth=1.5)
+    medianprops = dict(linewidth=2.0, color='#ff7f0e')
+
+    for ax, correlations, panel_label in zip(axes, (clean(insitu_correlations), clean(uas_correlations)), ('A)', 'B)')):
+        ax.boxplot(
+            list(correlations.values()), labels=labels, showfliers=False,
+            widths=0.6, patch_artist=False,
+            boxprops=boxprops, whiskerprops=whiskerprops,
+            capprops=capprops, medianprops=medianprops,
+        )
+        ax.set_ylim(0, 1)
+        ax.set_xlabel('Rivers')
+        ax.tick_params(axis='x', labelsize=10)
+        ax.text(0.95, 0.95, panel_label, transform=ax.transAxes,
+                ha='right', va='top', fontweight='bold')
+
+    axes[0].set_ylabel('Correlation (r)')
+
+    plt.tight_layout()
+    fig.subplots_adjust(wspace=0.15)
+    output_path = r'G:\Other computers\My Laptop\codes\radiometer_processor\data\output\transit_time_vs_correlation_combined_boxplots.svg'
+    plt.savefig(output_path, bbox_inches='tight')
+    plt.close()
+    return output_path
+
+
+root = r'G:\Other computers\My Laptop\dissertation\SPM_Hyperspectral'
+SPM_path = r'{}\data\discharge\daily\sites_SPM_daily.xlsx'.format(root)
+discharge_path = r'{}\data\discharge\daily\discharge_daily_combined.xlsx'.format(root)
+pearl_river_path = r'{}\data\discharge\daily\Pearl.xlsx'.format(root)
 # x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'Insitu SPM',
 #                                        'Jourdan River', 'Date', 'Date', 16)
-# create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Jourdan River', 16)
+# create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Jourdan River')
 #
 # x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'Insitu SPM',
 #                                        'Wolf River', 'Date', 'Date', 13)
-# create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Wolf River', 13)
+# create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Wolf River')
 # x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'Insitu SPM',
 #                                        'Pearl River', 'Date', 'Date', 39)
-# create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Pearl River', 39)
+# create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Pearl River')
 #
 # x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'Insitu SPM',
 #                                        'Bonnet Carre Spillway', 'Date', 'Date',
 #                                        17)
-# create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Bonnet Carre Spillway', 17)
+# create_scatter_plot(x, y, 'blue', 'Insitu SPM', 'Bonnet Carre Spillway')
 
-
-#
-#
 # x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'UAS SPM',
-#                                        'Jourdan River', 'Date', 'Date', 60)
-# create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Jourdan River',60)
+#                                        'Jourdan River', 'Date', 'Date', 16)
+# create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Jourdan River')
 #
 # x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'UAS SPM',
-#                                        'Wolf River', 'Date', 'Date', 92)
-# create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Wolf River', 92)
+#                                        'Wolf River', 'Date', 'Date', 13)
+# create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Wolf River')
 # x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'UAS SPM',
-#                                        'Pearl River', 'Date', 'Date', 83)
-# create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Pearl River', 83)
+#                                        'Pearl River', 'Date', 'Date', 39)
+# create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Pearl River')
 #
 # x, y = prepare_SPM_discharge_corr_data(SPM_path, discharge_path, 'UAS SPM',
-#                                        'Bonnet Carre Spillway', 'Date', 'Date', 69)
-# create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Bonnet Carre Spillway', 69)
+#                                        'Bonnet Carre Spillway', 'Date', 'Date', 17)
+# create_scatter_plot(x, y, 'blue', 'UAS SPM', 'Bonnet Carre Spillway')
 
 def loop_correlation(river, SPM_type, transit_time, correlations):
     # file_path = r'D:\MSU\codes\radiometer_processor\data\{} {} {}.png'.format(SPM_type, river, transit_time)
@@ -206,88 +253,86 @@ def loop_correlation(river, SPM_type, transit_time, correlations):
 
     if transit_time not in correlations.keys():
         correlations[transit_time] = []
-    # print(x, y)
     corr = np.corrcoef(x, y)[0][1]
-    print (corr)
+    print(corr)
     if corr > 0:
         create_scatter_plot(x, y, 'blue', SPM_type, river, transit_time)
         correlations[transit_time].append(corr)
 
 
-
-print ('Insitu')
-param_type = 'Insitu'
-
 correlations = {}
 for i in range(1, 100):
     loop_correlation('Jourdan River', 'Insitu', i, correlations)
 
+print ('Insitu')
+param_type = 'Insitu'
+
+print ('Corr ', correlations)
 correlations_jourdan = correlations.copy()
 if len(correlations.keys()) > 0:
+
     best_corr =  max(correlations.values())
     transit_time = list(correlations.keys())[list(correlations.values()).index(best_corr)]
     print ('Jourdan River', transit_time, best_corr)
     correlation = transit_time_correlation_plot(correlations, param_type, 'Transit Time', 'Correlation Coefficient', 'Jourdan River')
-    correlation_insitu_jourdan = correlation
+    correlation_uas_jourdan = correlation #list(chain.from_iterable(list(correlations.values())))
 
 
 correlations = {}
 for i in range(1, 100):
     loop_correlation('Wolf River', 'Insitu', i, correlations)
 
+print (correlations)
 correlations_wolf = correlations.copy()
 if len(correlations.keys()) > 0:
     best_corr =  max(correlations.values())
     transit_time = list(correlations.keys())[list(correlations.values()).index(best_corr)]
     print ('Wolf River', transit_time, best_corr)
     correlation = transit_time_correlation_plot(correlations, param_type, 'Transit Time', 'Correlation Coefficient', 'Wolf River')
-    correlation_insitu_wolf = correlation
+    correlation_uas_wolf = correlation #list(chain.from_iterable(list(correlations.values())))
+
 
 correlations = {}
 for i in range(1, 100):
     loop_correlation('Pearl River', 'Insitu', i, correlations)
-
 correlations_pearl = correlations.copy()
 if len(correlations.keys()) > 0:
     best_corr = max(correlations.values())
     transit_time = list(correlations.keys())[list(correlations.values()).index(best_corr)]
     print ('Pearl River', transit_time, best_corr)
     correlation = transit_time_correlation_plot(correlations, param_type, 'Transit Time', 'Correlation Coefficient', 'Pearl River')
-    correlation_insitu_pearl = correlation
-
+    correlation_uas_pearl = correlation #list(chain.from_iterable(list(correlations.values())))
 
 correlations = {}
 for i in range(1, 100):
     loop_correlation('Bonnet Carre Spillway', 'Insitu', i, correlations)
-
 correlations_spillway = correlations.copy()
 if len(correlations.keys()) > 0:
     best_corr = max(correlations.values())
     transit_time = list(correlations.keys())[list(correlations.values()).index(best_corr)]
     print ('Bonnet Carre Spillway', transit_time, best_corr)
     correlation = transit_time_correlation_plot(correlations, param_type, 'Transit Time', 'Correlation Coefficient', 'Bonnet Carre Spillway')
-    correlation_insitu_spillway = correlation
+    correlation_uas_spillway = correlation #list(chain.from_iterable(list(correlations.values())))
 
-transit_time_correlation_boxplots({'Jourdan River': correlation_insitu_jourdan, 'Wolf River': correlation_insitu_wolf,
-                                   'Pearl River': correlation_insitu_pearl, 'Bonnet Carre Spillway': correlation_insitu_spillway},
-                                  param_type)
+# Captured (not plotted standalone) so it can be combined with UAS below into
+# a single two-panel A)/B) figure instead of two separate figures.
+insitu_river_correlations = {'Jourdan River': correlation_uas_jourdan, 'Wolf River': correlation_uas_wolf,
+                             'Pearl River': correlation_uas_pearl, 'Bonnet Carre Spillway': correlation_uas_spillway}
 
-
-
-print ('UAS')
-param_type = 'UAS'
 
 correlations = {}
 for i in range(1, 100):
     loop_correlation('Jourdan River', 'UAS', i, correlations)
 
+print ('UAS')
+param_type = 'UAS'
 correlations_jourdan = correlations.copy()
 if len(correlations.keys()) > 0:
     best_corr = max(correlations.values())
     transit_time = list(correlations.keys())[list(correlations.values()).index(best_corr)]
     print ('Jourdan River', transit_time, best_corr)
     correlation = transit_time_correlation_plot(correlations, param_type, 'Transit Time', 'Correlation Coefficient', 'Jourdan River')
-    correlation_uas_jourdan = correlation
+    correlation_uas_jourdan = correlation #list(chain.from_iterable(list(correlations.values())))
 
 correlations = {}
 for i in range(1, 100):
@@ -299,7 +344,7 @@ if len(correlations.keys()) > 0:
     transit_time = list(correlations.keys())[list(correlations.values()).index(best_corr)]
     print ('Wolf River', transit_time, best_corr)
     correlation = transit_time_correlation_plot(correlations, param_type, 'Transit Time', 'Correlation Coefficient', 'Wolf River')
-    correlation_uas_wolf = correlation
+    correlation_uas_wolf = correlation #list(chain.from_iterable(list(correlations.values())))
 
 correlations = {}
 for i in range(1, 100):
@@ -311,7 +356,7 @@ if len(correlations.keys()) > 0:
     transit_time = list(correlations.keys())[list(correlations.values()).index(best_corr)]
     print ('Pearl River', transit_time, best_corr)
     correlation = transit_time_correlation_plot(correlations, param_type, 'Transit Time', 'Correlation Coefficient', 'Pearl River')
-    correlation_uas_pearl = correlation
+    correlation_uas_pearl = correlation #list(chain.from_iterable(list(correlations.values())))
 
 correlations = {}
 for i in range(1, 100):
@@ -323,8 +368,10 @@ if len(correlations.keys()) > 0:
     transit_time = list(correlations.keys())[list(correlations.values()).index(best_corr)]
     print ('Bonnet Carre Spillway', transit_time, best_corr)
     correlation = transit_time_correlation_plot(correlations, param_type, 'Transit Time', 'Correlation Coefficient', 'Bonnet Carre Spillway')
-    correlation_uas_spillway = correlation
+    correlation_uas_spillway = correlation #list(chain.from_iterable(list(correlations.values())))
 
-transit_time_correlation_boxplots({'Jourdan River': correlation_uas_jourdan, 'Wolf River': correlation_uas_wolf,
-                                   'Pearl River': correlation_uas_pearl, 'Bonnet Carre Spillway': correlation_uas_spillway},
-                                  param_type)
+uas_river_correlations = {'Jourdan River': correlation_uas_jourdan, 'Wolf River': correlation_uas_wolf,
+                          'Pearl River': correlation_uas_pearl, 'Bonnet Carre Spillway': correlation_uas_spillway}
+
+combined_output_path = transit_time_correlation_boxplots_combined(insitu_river_correlations, uas_river_correlations)
+print('Combined Insitu/UAS boxplot saved to:', combined_output_path)
