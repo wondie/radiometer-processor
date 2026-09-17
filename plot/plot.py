@@ -1,4 +1,5 @@
 import functools
+import os
 import warnings
 from collections import OrderedDict
 from datetime import datetime
@@ -112,7 +113,7 @@ def save_plot(plt, size, file_name=None, fig=None):
         plt.savefig(r'{}\data\output\{}.svg'.format(ROOT, file_name), dpi = style['dpi'])
         # plt.show()
         plt.close()
-def create_scatter_plot(actual, estimated, validation, model, training_y, training_x, r2, equation_latex, size='paper'):
+def create_scatter_plot(actual, estimated, validation, model, training_y, training_x, r2, equation_latex, size='paper', output_path=None):
 
     style = plot_size(size)
 
@@ -127,11 +128,20 @@ def create_scatter_plot(actual, estimated, validation, model, training_y, traini
     alg_ax = axes['left']
     add_algorithm_plot(training_y, training_x,model,  alg_ax, r2, equation_latex, style)
     # fig.tight_layout(h_pad=0.8, w_pad=0.32)
+    if output_path is None:
+        # D:\MSU\... (this function's original hardcoded location) no longer
+        # exists now that the project lives under ROOT; default next to the
+        # rest of this project's generated figures instead.
+        output_dir = os.path.join(ROOT, 'data', 'output')
+        os.makedirs(output_dir, exist_ok=True)
+        output_path = os.path.join(output_dir, 'result_{}.png'.format(r2))
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         # print("Failed")
-        plt.savefig(r'D:\MSU\codes\radiometer_processor\data\result_{}.png'.format(r2),
-                dpi = style['dpi'])
+        # bbox_inches='tight' matters here specifically because a long/multi-line
+        # equation_latex x-label (see validate_spm_algorithm.py) otherwise gets
+        # cropped off the bottom of the fixed figsize canvas.
+        plt.savefig(output_path, dpi = style['dpi'], bbox_inches='tight')
         fig.show()
 
 

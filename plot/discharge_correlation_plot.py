@@ -32,9 +32,16 @@ def prepare_SPM_discharge_corr_data(x_path, y_path, x_field_name, y_field_name,
         corrected_date = curr_date_obj - timedelta(days=residence_time)
         corrected_date_str = corrected_date.strftime("%m-%d-%Y")
         if corrected_date_str in y_daily_values.keys():
-            if y_daily_values[corrected_date_str] is not None and y_daily_values[corrected_date_str] != 0:
+            value = y_daily_values[corrected_date_str]
+            # A blank Excel cell (e.g. Bonnet Carre Spillway closed) reads as
+            # float('nan'), not None -- np.corrcoef returns nan for the whole
+            # array if even one pair is nan, so every transit-time's
+            # correlation silently came out nan whenever a shifted date landed
+            # on a blank cell. Excluded here the same way an explicit 0 or
+            # None already was.
+            if value is not None and not pd.isna(value) and value != 0:
                 x_plot_data.append(x_data)
-                y_plot_data.append(y_daily_values[corrected_date_str])
+                y_plot_data.append(value)
 
     return x_plot_data, y_plot_data
 
@@ -77,7 +84,11 @@ def create_scatter_plot(x, y, color, x_field_name, y_field_name, transt_d, cor='
     plt.ylabel(y_field_name)
     plt.title('Fit of {} and {}'.format(x_field_name, y_field_name))
     # plt.show()
-    save_plot(plt, 'poster', '{} {} {} {}'.format(x_field_name, y_field_name, transt_d, cor[0]))
+    # "mic" suffix keeps this apart from discharge_correlation_plot_hyper.py's
+    # identically-named scatter plots (same field/river/transit-time naming
+    # scheme, different underlying data) so one script doesn't overwrite the
+    # other's figures.
+    save_plot(plt, 'poster', '{} {} {} {} mic'.format(x_field_name, y_field_name, transt_d, cor[0]))
 
 
 def transit_time_correlation_plot(correlation, param_type, x_label_name, y_label_name, riv):
@@ -103,7 +114,7 @@ def transit_time_correlation_plot(correlation, param_type, x_label_name, y_label
     plt.title("Transit Time Vs Correlation, {}".format(riv))
     #plt.show()
     plt.ylim([0, 1])
-    save_plot(plt, 'poster', 'transit_time_vs_correlation {}_{}'.format(param_type, riv))
+    save_plot(plt, 'poster', 'transit_time_vs_correlation {}_{} mic'.format(param_type, riv))
     return y
 
 def transit_time_correlation_all_rivers(correlations_dict, param_type, x_label_name, y_label_name):
@@ -128,7 +139,7 @@ def transit_time_correlation_all_rivers(correlations_dict, param_type, x_label_n
     plt.xlim([0, 100])
     plt.legend(loc='best')
     plt.grid(True, alpha=0.3)
-    save_plot(plt, 'poster', 'transit_time_vs_correlation_{}_rivers'.format(param_type))
+    save_plot(plt, 'poster', 'transit_time_vs_correlation_{}_rivers_mic'.format(param_type))
 
 def transit_time_correlation_boxplots(correlation, param_type):
     for c in (correlation.keys()):
@@ -160,8 +171,60 @@ def transit_time_correlation_boxplots(correlation, param_type):
     for label in ax.get_xticklabels() + ax.get_yticklabels():
         label.set_fontweight('bold')
     plt.tight_layout(pad=2.0)
-    plt.savefig(r'G:\Other computers\My Laptop\codes\radiometer_processor\data\output\transit_time_vs_correlation_{}_boxplots.png'.format(param_type), dpi=150, bbox_inches='tight')
+    plt.savefig(r'G:\Other computers\My Laptop\codes\radiometer_processor\data\output\transit_time_vs_correlation_{}_boxplots_mic.svg'.format(param_type), bbox_inches='tight')
     plt.close()
+
+
+def transit_time_correlation_boxplots_combined(insitu_correlations, uas_correlations,
+                                                river_order=('Bonnet Carre Spillway', 'Jourdan River',
+                                                             'Pearl River', 'Wolf River')):
+    """Combine the Insitu (panel A) and UAS (panel B) transit-time correlation
+    boxplots into a single two-panel figure, for the case where the two aren't
+    significantly different and don't need separate figures.
+    """
+    def clean(correlations):
+        cleaned = OrderedDict()
+        for river in river_order:
+            values = [v for v in correlations.get(river, []) if v is not None and v >= 0]
+            cleaned[river] = values
+        return cleaned
+
+    labels = [r.replace('Bonnet Carre Spillway', 'Bonnet Carre\nSpillway') for r in river_order]
+
+    fig, axes = plt.subplots(1, 2, figsize=(15, 3.5), sharey=True)
+    boxprops = dict(linewidth=1.5)
+    whiskerprops = dict(linewidth=1.5)
+    capprops = dict(linewidth=1.5)
+    medianprops = dict(linewidth=2.0, color='#ff7f0e')
+
+    for ax, correlations, panel_label in zip(axes, (clean(insitu_correlations), clean(uas_correlations)), ('A)', 'B)')):
+        ax.boxplot(
+            list(correlations.values()), labels=labels, showfliers=False,
+            widths=0.6, patch_artist=False,
+            boxprops=boxprops, whiskerprops=whiskerprops,
+            capprops=capprops, medianprops=medianprops,
+        )
+        ax.set_ylim(0, 1)
+        ax.set_xlabel('Rivers')
+        ax.set_ylabel('Correlation (r)')
+        ax.tick_params(axis='x', labelsize=10)
+        # sharey=True hides y-tick labels on every panel but the first by
+        # default; force them back on so both panels show 0.0, 0.2, etc.
+        ax.tick_params(axis='y', labelleft=True)
+        ax.text(0.95, 0.95, panel_label, transform=ax.transAxes,
+                ha='right', va='top', fontweight='bold')
+
+    plt.tight_layout()
+    fig.subplots_adjust(wspace=0.15)
+    # _mic suffix distinguishes this from discharge_correlation_plot_hyper.py's
+    # identically-named output -- both scripts previously wrote to the exact
+    # same filename, so running one silently clobbered the other's figure.
+    output_path = r'G:\Other computers\My Laptop\codes\radiometer_processor\data\output\transit_time_vs_correlation_combined_boxplots_mic.svg'
+    plt.savefig(output_path, bbox_inches='tight')
+    plt.close()
+    return output_path
+
+
 root = r'G:\Other computers\My Laptop\dissertation\SPM_Multi-spectral'
 SPM_path = r'{}\data\discharge\daily\sites_SPM_daily.xlsx'.format(root)
 discharge_path = r'{}\data\discharge\daily\discharge_daily_combined.xlsx'.format(root)
@@ -267,9 +330,10 @@ if len(correlations.keys()) > 0:
     correlation = transit_time_correlation_plot(correlations, param_type, 'Transit Time', 'Correlation Coefficient', 'Bonnet Carre Spillway')
     correlation_uas_spillway = correlation #list(chain.from_iterable(list(correlations.values())))
 
-transit_time_correlation_boxplots({'Jourdan River': correlation_uas_jourdan, 'Wolf River': correlation_uas_wolf,
-                                   'Pearl River': correlation_uas_pearl, 'Bonnet Carre Spillway': correlation_uas_spillway},
-                                  param_type)
+# Captured (not plotted standalone) so it can be combined with UAS below into
+# a single two-panel A)/B) figure instead of two separate figures.
+insitu_river_correlations = {'Jourdan River': correlation_uas_jourdan, 'Wolf River': correlation_uas_wolf,
+                             'Pearl River': correlation_uas_pearl, 'Bonnet Carre Spillway': correlation_uas_spillway}
 
 
 correlations = {}
@@ -322,6 +386,8 @@ if len(correlations.keys()) > 0:
     correlation = transit_time_correlation_plot(correlations, param_type, 'Transit Time', 'Correlation Coefficient', 'Bonnet Carre Spillway')
     correlation_uas_spillway = correlation #list(chain.from_iterable(list(correlations.values())))
 
-transit_time_correlation_boxplots({'Jourdan River': correlation_uas_jourdan, 'Wolf River': correlation_uas_wolf,
-                                   'Pearl River': correlation_uas_pearl, 'Bonnet Carre Spillway': correlation_uas_spillway},
-                                  param_type)
+uas_river_correlations = {'Jourdan River': correlation_uas_jourdan, 'Wolf River': correlation_uas_wolf,
+                          'Pearl River': correlation_uas_pearl, 'Bonnet Carre Spillway': correlation_uas_spillway}
+
+combined_output_path = transit_time_correlation_boxplots_combined(insitu_river_correlations, uas_river_correlations)
+print('Combined Insitu/UAS boxplot saved to:', combined_output_path)

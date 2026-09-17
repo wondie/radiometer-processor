@@ -9,7 +9,13 @@ import numpy as np
 
 from box_plot_line import setup_boxplot_data_monthly, add_box_plots, stats
 
-params = {'legend.fontsize': 'x-large',
+# legend.fontsize/axes.labelsize/axes.titlesize/xtick.labelsize/ytick.labelsize
+# below are all the relative keyword 'x-large', which matplotlib resolves as a
+# fixed multiple of font.size -- bumping font.size by 1.4x here scales every
+# one of them (and anything else using a relative size) by the same 40%,
+# rather than needing to touch each one individually.
+params = {'font.size': plt.rcParams['font.size'] * 1.4,
+          'legend.fontsize': 'x-large',
           'figure.figsize': (15, 5),
           'axes.labelsize': 'x-large',
           'axes.titlesize':'x-large',
@@ -49,7 +55,11 @@ def plot_data(spm_path, discharge_path, insitu_spm_field, uas_spm_field,
             # SPM data recorded
 
             if i == 3: # Index 2 is Bonnet Caree
-                if discharge_data is None:
+                # group_data_by_date() (in the shared plot.py, not touched here)
+                # stores a blank Excel cell as float('nan'), not None -- the
+                # spillway is normally closed, so treat missing/NaN as 0 CFS
+                # the same way an explicit None is already treated.
+                if discharge_data is None or pd.isna(discharge_data):
                     discharge_plot_data[curr_date_obj] = 0
                 else:
                     discharge_plot_data[curr_date_obj] = discharge_data
@@ -69,7 +79,10 @@ def plot_data(spm_path, discharge_path, insitu_spm_field, uas_spm_field,
     # dates = matplotlib.dates.date2num(date_objs)
     # ax.xaxis.set_major_locator(matplotlib.dates.WeekdayLocator())
     ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%b %Y'))
-    ax.xaxis.set_major_locator(matplotlib.dates.MonthLocator())
+    # One tick per month (interval=1) over this file's ~42-month span (2018-02
+    # to 2021-08) crowded every label into an unreadable solid band; every 3rd
+    # month keeps the same "Mon YYYY" format at a legible ~14 ticks instead.
+    ax.xaxis.set_major_locator(matplotlib.dates.MonthLocator(interval=3))
 
     left = date(2018, 2, 1)
     right = date(2021,8, 1)
@@ -81,12 +94,6 @@ def plot_data(spm_path, discharge_path, insitu_spm_field, uas_spm_field,
     p0, = ax.plot(spm_date_objs, spm_uas_mean.values(),
                   color="#c284dc",  markersize=14,marker='.',
                   linestyle = '-',label=uas_spm_field)
-
-    boxprops = dict(color="#2177e2", linewidth=1.5)
-    medianprops = dict(color="#2177e2", linewidth=1.5)
-    flierprops = dict(marker='o', markerfacecolor='none', markersize=7,
-                      linestyle='none', markeredgecolor='#2177e2')
-
 
 # print(np.array( [ np.random.normal( i, 1, 10 ) for i in range(3) ] ))
     # ax.set_xticklabels(list(insitu_spm_data.keys()), rotation=45 )
@@ -162,33 +169,15 @@ def plot_data(spm_path, discharge_path, insitu_spm_field, uas_spm_field,
     ax.tick_params(axis='y', colors=p.get_color())
     twin1.tick_params(axis='y', colors=p2.get_color())
     twin2.tick_params(axis='y', colors=p3.get_color())
-    # print (insitu_spm_data.values())
-    spm_pos = pd.DatetimeIndex(discharge_daily_values_cont[0].keys())
-    # print ('Pos ', spm_pos)
-    for dt, val in discharge_daily_values_cont[0].items():
-        if dt not in insitu_spm_data.keys():
-            insitu_spm_data[dt] = []
-
-    spm_indexes = [spm_pos.get_loc(d) for d in insitu_spm_data.keys()]
-    print(spm_indexes)
-    ax.boxplot(
-        list(insitu_spm_data.values()), positions=spm_indexes,
-        boxprops=boxprops, medianprops=medianprops,
-        capprops=dict(color="#2177e2"),
-        whiskerprops=dict(color="#2177e2"),
-        flierprops=flierprops
-    )
-    # seaborn.boxplot(x=list(insitu_spm_data.keys()), y=list(insitu_spm_data.values()))
-    # ax.set_xticklabels(list(discharge_daily_values_cont[0].keys()), rotation=45 )
 
     plt.gcf().autofmt_xdate()
 
     plt.tight_layout()
     ax.legend(handles=[p, p0, p1, p2, p3, p4], loc=4)
-    save_plot(plt, 'poster', 'SPM and Discharge')
+    save_plot(plt, 'paper', 'SPM and Discharge mic')
 
 SPM_path = r'G:\Other computers\My Laptop\dissertation\SPM_Multi-spectral\data\sites_SPM.xlsx'
 discharge_path = r'G:\Other computers\My Laptop\dissertation\SPM_Multi-spectral\data\discharge\daily\discharge_daily_combined.xlsx'
 
-plot_data(SPM_path, discharge_path, 'Insitu SPM', 'UAS SPM', 'Date', 'Jourdan River', 'Wolf River','Pearl River','Bonnet Carre Spillway', 'SPM (mg/L)', 'Gauge Height','Discharge (cpfs)','Date', 4)
+plot_data(SPM_path, discharge_path, 'Insitu SPM', 'UAS SPM', 'Date', 'Jourdan River', 'Wolf River','Pearl River','Bonnet Carre Spillway', 'SPM (mg/L)', 'Gauge Height','Discharge (Cubic Feet per Second)','Date', 4)
 
